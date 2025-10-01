@@ -1,13 +1,22 @@
 <p>home works!</p>
 
 <table>
-  <tr>
-    <td>
-      <select name="status" [(ngModel)]="status">
-        <option value="">--</option>
-        <option value="OK">OK</option>
-        <option value="NG">NG</option>
-      </select>
-    </td>
-  </tr>
+  <thead>
+    <tr>
+      <th>Index</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of items; let i = index">
+      <td>{{ i }}</td>
+      <td [class.changed]="isChanged(i)">
+        <select name="status-{{i}}" [(ngModel)]="statuses[i]">
+          <option value="">--</option>
+          <option value="OK">OK</option>
+          <option value="NG">NG</option>
+        </select>
+      </td>
+    </tr>
+  </tbody>
 </table>
