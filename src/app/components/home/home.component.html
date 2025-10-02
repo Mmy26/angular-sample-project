@@ -4,14 +4,34 @@
   <thead>
     <tr>
       <th>Index</th>
+      <th>Column A</th>
+      <th>Column B</th>
+      <th>Column C</th>
       <th>Status</th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let item of items; let i = index">
-      <td>{{ i }}</td>
-      <td [class.changed]="isChanged(i)">
-        <select name="status-{{i}}" [(ngModel)]="statuses[i]">
+    <tr
+      *ngFor="let item of items; let i = index"
+      (click)="onRowClick(i)"
+      [class.selected-row]="selectedRowIndex === i"
+    >
+      <td>{{ i + 1 }}</td> <!-- Excelのように1から始まるインデックス -->
+      <td>{{ data[i]['Column A'] }}</td>
+      <td>{{ data[i]['Column B'] }}</td>
+      <td>{{ data[i]['Column C'] }}</td>
+      <td
+        [class.changed]="isChanged(i)"
+        [class.selected-for-confirmation]="selectedForConfirmation[i]"
+        [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
+        (click)="onCellClick(i)"
+      >
+        <select
+          name="status-{{i}}"
+          [(ngModel)]="statuses[i]"
+          (ngModelChange)="onStatusChange(i)"
+          [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
+        >
           <option value="">--</option>
           <option value="OK">OK</option>
           <option value="NG">NG</option>
@@ -20,3 +40,12 @@
     </tr>
   </tbody>
 </table>
+
+<div>
+  <label>
+    <input type="checkbox" [(ngModel)]="isConfirmationMode">
+    確認モード
+  </label>
+</div>
+
+<button (click)="finalConfirm()" [disabled]="!isConfirmationMode">最終確認</button>
