@@ -30,7 +30,23 @@
         (click)="onCellClick(i, 1)"
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 1"
       >
-        {{ data[i]["Column A"] }}
+        <ng-container
+          *ngIf="
+            editingCell?.row === i && editingCell?.col === 1;
+            else viewModeA
+          "
+        >
+          <input
+            [id]="'edit-input-' + i + '-1'"
+            [(ngModel)]="editedValue"
+            (blur)="saveEditedValue()"
+            (keydown.enter)="saveEditedValue()"
+            (keydown.escape)="cancelEditing()"
+          />
+        </ng-container>
+        <ng-template #viewModeA>
+          {{ data[i]["Column A"] }}
+        </ng-template>
       </td>
       <td
         #dataCell
@@ -38,7 +54,23 @@
         (click)="onCellClick(i, 2)"
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 2"
       >
-        {{ data[i]["Column B"] }}
+        <ng-container
+          *ngIf="
+            editingCell?.row === i && editingCell?.col === 2;
+            else viewModeB
+          "
+        >
+          <input
+            [id]="'edit-input-' + i + '-2'"
+            [(ngModel)]="editedValue"
+            (blur)="saveEditedValue()"
+            (keydown.enter)="saveEditedValue()"
+            (keydown.escape)="cancelEditing()"
+          />
+        </ng-container>
+        <ng-template #viewModeB>
+          {{ data[i]["Column B"] }}
+        </ng-template>
       </td>
       <td
         #dataCell
@@ -46,7 +78,23 @@
         (click)="onCellClick(i, 3)"
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 3"
       >
-        {{ data[i]["Column C"] }}
+        <ng-container
+          *ngIf="
+            editingCell?.row === i && editingCell?.col === 3;
+            else viewModeC
+          "
+        >
+          <input
+            [id]="'edit-input-' + i + '-3'"
+            [(ngModel)]="editedValue"
+            (blur)="saveEditedValue()"
+            (keydown.enter)="saveEditedValue()"
+            (keydown.escape)="cancelEditing()"
+          />
+        </ng-container>
+        <ng-template #viewModeC>
+          {{ data[i]["Column C"] }}
+        </ng-template>
       </td>
       <td
         #dataCell

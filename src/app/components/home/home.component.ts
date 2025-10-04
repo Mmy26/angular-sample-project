@@ -25,6 +25,8 @@ export class HomeComponent implements OnInit {
   public selectedRowIndex: number | null = null; // 選択された行のインデックス
 
   public selectedCell: { row: number; col: number } = { row: 0, col: 0 }; // 選択されたセルの行と列
+  public editingCell: { row: number; col: number } | null = null; // 編集中のセルの行と列
+  public editedValue: string = ''; // 編集中のセルの値
   @ViewChildren('dataCell') dataCells!: QueryList<ElementRef>;
   @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // status select要素への参照
 
@@ -79,6 +81,14 @@ export class HomeComponent implements OnInit {
         event.preventDefault();
         this.openStatusDropdown(this.selectedCell.row);
       }
+    } else if (event.key === 'Enter' && this.editingCell) {
+      // Enterキーで編集を確定
+      event.preventDefault();
+      this.saveEditedValue();
+    } else if (event.key === 'Escape' && this.editingCell) {
+      // Escapeキーで編集をキャンセル
+      event.preventDefault();
+      this.cancelEditing();
     }
   }
 
@@ -120,6 +130,12 @@ export class HomeComponent implements OnInit {
           if (selectElement) {
             selectElement.focus();
           }
+        } else if (
+          this.selectedCell.col > 0 &&
+          this.selectedCell.col < this.STATUS_COLUMN_INDEX
+        ) {
+          // Column A, B, C のセルにフォーカスが当たった場合、編集モードを開始
+          this.startEditing(this.selectedCell.row, this.selectedCell.col);
         }
       }
     }, 0);
@@ -132,6 +148,52 @@ export class HomeComponent implements OnInit {
       // プログラム的にクリックイベントを発生させてドロップダウンを開く
       // Note: `select.focus()`はドロップダウンを開かないため、`click()`を使用
       selectElement.click();
+    }
+  }
+
+  // 編集モードを開始
+  startEditing(row: number, col: number): void {
+    this.editingCell = { row, col };
+    const columnName = this.getColumnName(col);
+    this.editedValue = this.data[row][columnName];
+    // DOMが更新されるのを待ってからinput要素にフォーカスを当てる
+    setTimeout(() => {
+      const inputElement = this.el.nativeElement.querySelector(
+        `#edit-input-${row}-${col}`
+      );
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 0);
+  }
+
+  // 編集を確定して値を保存
+  saveEditedValue(): void {
+    if (this.editingCell) {
+      const columnName = this.getColumnName(this.editingCell.col);
+      this.data[this.editingCell.row][columnName] = this.editedValue;
+      this.editingCell = null;
+      this.editedValue = '';
+    }
+  }
+
+  // 編集をキャンセル
+  cancelEditing(): void {
+    this.editingCell = null;
+    this.editedValue = '';
+  }
+
+  // 列のインデックスから列名を取得
+  getColumnName(colIndex: number): string {
+    switch (colIndex) {
+      case 1:
+        return 'Column A';
+      case 2:
+        return 'Column B';
+      case 3:
+        return 'Column C';
+      default:
+        return '';
     }
   }
 
