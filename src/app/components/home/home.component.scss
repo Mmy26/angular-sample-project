@@ -10,7 +10,7 @@ table {
 th,
 td {
   border: 1px solid #e0e0e0; /* セルの罫線 */
-  padding: 6px 12px; /* パディングを調整 */
+  padding: 0; /* input/selectのパディングで調整するため0に */
   text-align: left;
   font-size: 13px;
   white-space: nowrap; /* セル内のテキストを折り返さない */
@@ -78,20 +78,28 @@ td.selected-cell.selected-for-confirmation {
   border: 2px solid #ff9800; /* オレンジ色の枠線 */
 }
 
-select {
+td input, /* input要素のボーダーを確実に削除 */
+td select {
   width: 100%;
-  padding: 4px;
-  border: 1px solid #a0a0a0;
+  padding: 0; /* input/selectのパディングで調整するため0に */
+  border: none !important; /* ボーダーを強制的に削除 */
   border-radius: 0; /* 角丸をなくす */
-  background-color: #fff;
+  background-color: transparent !important; /* 背景色を強制的に透明に */
   font-size: 13px;
-  -webkit-appearance: none; /* デフォルトのスタイルを無効化 */
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.2-5.4H18.2c-5%200-9.3%201.8-13.2%205.4A17.6%2017.6%200%200%200%200%2082.6c0%204.8%201.8%209.3%205.4%2013.2l128%20128c3.9%203.9%208.4%205.8%2013.2%205.8s9.3-1.9%2013.2-5.8l128-128c3.9-3.9%205.8-8.4%205.8-13.2%200-4.8-1.9-9.3-5.8-13.2z%22%2F%3E%3C%2Fsvg%3E"); /* ドロップダウン矢印 */
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 10px;
+  font-family: "Segoe UI", Arial, sans-serif; /* Excelのようなフォント */
+  box-sizing: border-box; /* パディングとボーダーを幅に含める */
+  // outline: none; /* フォーカス時のアウトラインを削除 */
+}
+
+td select {
+  // -webkit-appearance: none; /* デフォルトのスタイルを無効化 */
+  // -moz-appearance: none;
+  // appearance: none;
+  /* ドロップダウン矢印を強制的に削除 */
+  background-image: none !important;
+  background-repeat: initial;
+  background-position: initial;
+  background-size: initial;
 
   &[disabled] {
     pointer-events: none; /* 無効化されたselect要素のクリックイベントを透過させる */
