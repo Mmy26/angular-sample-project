@@ -58,6 +58,7 @@
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 4"
       >
         <select
+          #statusSelect
           name="status-{{ i }}"
           [(ngModel)]="statuses[i]"
           (ngModelChange)="onStatusChange(i)"

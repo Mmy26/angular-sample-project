@@ -5,6 +5,7 @@ import {
   ElementRef,
   ViewChildren,
   QueryList,
+  Renderer2,
 } from '@angular/core';
 
 @Component({
@@ -25,11 +26,14 @@ export class HomeComponent implements OnInit {
 
   public selectedCell: { row: number; col: number } = { row: 0, col: 0 }; // 選択されたセルの行と列
   @ViewChildren('dataCell') dataCells!: QueryList<ElementRef>;
+  @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // status select要素への参照
 
   // 列の数を定義 (Index, Column A, Column B, Column C, Status)
   private readonly NUM_COLUMNS = 5;
+  private readonly STATUS_COLUMN_INDEX = 4; // Status列のインデックス
+  private readonly STATUS_OPTIONS = ['OK', 'NG']; // Statusの選択肢
 
-  constructor(private el: ElementRef) {}
+  constructor(private el: ElementRef, private renderer: Renderer2) {}
 
   ngOnInit(): void {
     // 初期値を設定
@@ -51,11 +55,30 @@ export class HomeComponent implements OnInit {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // セル移動 (Altキーが押されていない場合)
     if (
+      !event.altKey &&
       ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
     ) {
-      event.preventDefault(); // デフォルトのスクロール動作を防止
+      event.preventDefault();
       this.moveSelection(event.key);
+    }
+    // MacでOption + 上下キーで値を変更
+    else if (
+      event.altKey &&
+      (event.key === 'ArrowUp' || event.key === 'ArrowDown')
+    ) {
+      if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
+        event.preventDefault();
+        this.changeStatusValue(event.key === 'ArrowUp' ? 'up' : 'down');
+      }
+    }
+    // WindowsでAlt + Downでドロップダウンを開く
+    else if (event.altKey && event.key === 'ArrowDown') {
+      if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
+        event.preventDefault();
+        this.openStatusDropdown(this.selectedCell.row);
+      }
     }
   }
 
@@ -89,9 +112,46 @@ export class HomeComponent implements OnInit {
         this.selectedCell.row * this.NUM_COLUMNS + this.selectedCell.col;
       const cellElement = this.dataCells.toArray()[cellIndex];
       if (cellElement) {
-        (cellElement.nativeElement as HTMLElement).focus();
+        const nativeElement = cellElement.nativeElement as HTMLElement;
+        nativeElement.focus();
+        // Status列の場合、select要素にフォーカスを当てる
+        if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
+          const selectElement = nativeElement.querySelector('select');
+          if (selectElement) {
+            selectElement.focus();
+          }
+        }
       }
     }, 0);
+  }
+
+  // Alt + Downでドロップダウンを開く
+  openStatusDropdown(rowIndex: number): void {
+    const selectElement = this.statusSelects.toArray()[rowIndex].nativeElement;
+    if (selectElement) {
+      // プログラム的にクリックイベントを発生させてドロップダウンを開く
+      // Note: `select.focus()`はドロップダウンを開かないため、`click()`を使用
+      selectElement.click();
+    }
+  }
+
+  // Status列の値を上下キーで変更する (MacのOption + 上下キー用)
+  changeStatusValue(direction: 'up' | 'down'): void {
+    const currentRow = this.selectedCell.row;
+    const currentStatus = this.statuses[currentRow];
+
+    let currentIndex = this.STATUS_OPTIONS.indexOf(currentStatus);
+
+    if (direction === 'down') {
+      currentIndex = (currentIndex + 1) % this.STATUS_OPTIONS.length;
+    } else if (direction === 'up') {
+      currentIndex =
+        (currentIndex - 1 + this.STATUS_OPTIONS.length) %
+        this.STATUS_OPTIONS.length;
+    }
+
+    this.statuses[currentRow] = this.STATUS_OPTIONS[currentIndex];
+    this.onStatusChange(currentRow); // 変更イベントをトリガー
   }
 
   // 行がクリックされたときの処理
