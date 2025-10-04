@@ -50,8 +50,8 @@ td:first-child {
 
 /* 確認モードで選択されたセル */
 .selected-for-confirmation {
-  background-color: #e0f2f7; /* 薄い青色 */
-  border: 2px solid #00bcd4; /* 青い枠線 */
+  background-color: #fff3e0; /* 薄いオレンジ色 */
+  border: 2px solid #ff9800; /* オレンジ色の枠線 */
 }
 
 /* 最終確認後も文字は赤字で表示され、セルの枠の色は保持されたまま */
@@ -67,9 +67,15 @@ td:first-child {
 
 /* 選択されたセル */
 td.selected-cell {
+  background-color: #e0f2f7; /* 薄い青色 */
+  border: 2px solid #00bcd4; /* 青い枠線 */
+  outline: none; /* デフォルトのフォーカスアウトラインを削除 */
+}
+
+/* 確認モードで選択され、かつ現在選択されているセル */
+td.selected-cell.selected-for-confirmation {
   background-color: #fff3e0; /* 薄いオレンジ色 */
   border: 2px solid #ff9800; /* オレンジ色の枠線 */
-  outline: none; /* デフォルトのフォーカスアウトラインを削除 */
 }
 
 select {
