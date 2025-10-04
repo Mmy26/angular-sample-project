@@ -1,16 +1,22 @@
 <div class="board">
   <div class="container" *ngFor="let column of columns">
-    <div class="reject-header" *ngIf="column.isRejectColumn">
-      <h2>{{column.title}}</h2>
-      <label class="switch">
-        <input type="checkbox" [(ngModel)]="column.isRejectEnabled">
-        <span class="slider round"></span>
-      </label>
-    </div>
-    <h2 *ngIf="!column.isRejectColumn">{{column.title}}</h2>
-    <div class="add-task" *ngIf="!column.isRejectColumn">
-      <input type="text" [(ngModel)]="newTask" placeholder="新しいタスクを追加">
-      <button (click)="addTask(column)">追加</button>
+    <div class="column-header">
+      <div class="reject-header" *ngIf="column.isRejectColumn">
+        <h2>{{ column.title }}</h2>
+        <label class="switch">
+          <input type="checkbox" [(ngModel)]="column.isRejectEnabled" />
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <h2 *ngIf="!column.isRejectColumn">{{ column.title }}</h2>
+      <div class="add-task" *ngIf="!column.isRejectColumn">
+        <input
+          type="text"
+          [(ngModel)]="newTask"
+          placeholder="新しいタスクを追加"
+        />
+        <button (click)="addTask(column)">追加</button>
+      </div>
     </div>
     <div
       cdkDropList
@@ -18,14 +24,26 @@
       [cdkDropListData]="column.data"
       [cdkDropListConnectedTo]="getConnectedListIds()"
       class="list"
-      (cdkDropListDropped)="drop($event)">
+      (cdkDropListDropped)="drop($event)"
+    >
       <div class="box" *ngFor="let item of column.data; let i = index" cdkDrag>
-        <ng-container *ngIf="editingTask?.columnId === column.id && editingTask?.index === i; else showTask">
-          <input type="text" [ngModel]="item" (ngModelChange)="saveTask(column.id, i, $event)" (blur)="cancelEdit()" (keyup.enter)="saveTask(column.id, i, $event)">
+        <ng-container
+          *ngIf="
+            editingTask?.columnId === column.id && editingTask?.index === i;
+            else showTask
+          "
+        >
+          <input
+            type="text"
+            [ngModel]="item"
+            (ngModelChange)="saveTask(column.id, i, $event)"
+            (blur)="cancelEdit()"
+            (keyup.enter)="saveTask(column.id, i, $event)"
+          />
           <button (click)="cancelEdit()">キャンセル</button>
         </ng-container>
         <ng-template #showTask>
-          {{item}}
+          {{ item }}
           <div class="actions">
             <button (click)="editTask(column.id, i, item)">編集</button>
             <button (click)="deleteTask(column.id, i)">削除</button>
@@ -35,7 +53,11 @@
     </div>
   </div>
   <div class="add-column-section">
-    <input type="text" [(ngModel)]="newColumnTitle" placeholder="新しい枠のタイトル">
+    <input
+      type="text"
+      [(ngModel)]="newColumnTitle"
+      placeholder="新しい枠のタイトル"
+    />
     <button (click)="addColumn()">枠を追加</button>
   </div>
 </div>
