@@ -87,8 +87,14 @@ export class HomeComponent implements OnInit {
     } else if (event.key === 'Enter') {
       event.preventDefault();
       if (this.editingCell) {
-        // 編集中のセルがある場合は編集を確定
-        this.saveEditedValue();
+        // 編集中のセルがある場合は編集を確定し、真下のセルに移動
+        this.saveEditedValueAndMoveDown();
+      } else if (
+        this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+        !this.isConfirmationMode
+      ) {
+        // Status列のselect要素でEnterが押された場合、真下のセルに移動
+        this.moveSelection('ArrowDown');
       } else if (
         this.isConfirmationMode &&
         this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
@@ -181,7 +187,13 @@ export class HomeComponent implements OnInit {
     }, 0);
   }
 
-  // 編集を確定して値を保存
+  // 編集を確定して値を保存し、真下のセルに移動
+  saveEditedValueAndMoveDown(): void {
+    this.saveEditedValue();
+    this.moveSelection('ArrowDown'); // 真下のセルに移動
+  }
+
+  // 編集を確定して値を保存 (移動なし)
   saveEditedValue(): void {
     if (this.editingCell) {
       const columnName = this.getColumnName(this.editingCell.col);
