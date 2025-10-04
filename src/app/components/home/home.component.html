@@ -28,6 +28,7 @@
         #dataCell
         tabindex="0"
         (click)="onCellClick(i, 1)"
+        (dblclick)="startEditing(i, 1)"
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 1"
       >
         <ng-container
@@ -52,6 +53,7 @@
         #dataCell
         tabindex="0"
         (click)="onCellClick(i, 2)"
+        (dblclick)="startEditing(i, 2)"
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 2"
       >
         <ng-container
@@ -76,6 +78,7 @@
         #dataCell
         tabindex="0"
         (click)="onCellClick(i, 3)"
+        (dblclick)="startEditing(i, 3)"
         [class.selected-cell]="selectedCell.row === i && selectedCell.col === 3"
       >
         <ng-container
@@ -111,6 +114,7 @@
           [(ngModel)]="statuses[i]"
           (ngModelChange)="onStatusChange(i)"
           [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
+          (keydown)="onStatusSelectKeydown($event, i)"
         >
           <option value="">--</option>
           <option value="OK">OK</option>

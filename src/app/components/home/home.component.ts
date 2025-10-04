@@ -70,7 +70,10 @@ export class HomeComponent implements OnInit {
       event.altKey &&
       (event.key === 'ArrowUp' || event.key === 'ArrowDown')
     ) {
-      if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
+      if (
+        this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+        !this.isConfirmationMode
+      ) {
         event.preventDefault();
         this.changeStatusValue(event.key === 'ArrowUp' ? 'up' : 'down');
       }
@@ -81,10 +84,21 @@ export class HomeComponent implements OnInit {
         event.preventDefault();
         this.openStatusDropdown(this.selectedCell.row);
       }
-    } else if (event.key === 'Enter' && this.editingCell) {
-      // Enterキーで編集を確定
+    } else if (event.key === 'Enter') {
       event.preventDefault();
-      this.saveEditedValue();
+      if (this.editingCell) {
+        // 編集中のセルがある場合は編集を確定
+        this.saveEditedValue();
+      } else if (
+        this.isConfirmationMode &&
+        this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+        this.isChanged(this.selectedCell.row) &&
+        !this.isConfirmedAndCleared[this.selectedCell.row]
+      ) {
+        // 確認モードでStatus列のセルが選択されており、変更があり、かつ未確定の場合
+        this.selectedForConfirmation[this.selectedCell.row] =
+          !this.selectedForConfirmation[this.selectedCell.row];
+      }
     } else if (event.key === 'Escape' && this.editingCell) {
       // Escapeキーで編集をキャンセル
       event.preventDefault();
@@ -265,5 +279,12 @@ export class HomeComponent implements OnInit {
       }
     });
     this.isConfirmationMode = false; // 確認モードを終了
+  }
+
+  // Status selectボックスのキーダウンイベント
+  onStatusSelectKeydown(event: KeyboardEvent, rowIndex: number): void {
+    if (this.isConfirmationMode) {
+      event.preventDefault(); // 確認モード中はキー入力を無効にする
+    }
   }
 }
