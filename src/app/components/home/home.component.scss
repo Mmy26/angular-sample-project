@@ -5,6 +5,7 @@ table {
   font-family: "Segoe UI", Arial, sans-serif; /* Excelのようなフォント */
   border: 1px solid #c8c8c8; /* 全体の罫線 */
   box-shadow: 0 0 0 1px #c8c8c8; /* Excelのような外枠の影 */
+  table-layout: fixed; /* 列の幅を固定 */
 }
 
 th,
@@ -14,6 +15,7 @@ td {
   text-align: left;
   font-size: 13px;
   white-space: nowrap; /* セル内のテキストを折り返さない */
+  box-sizing: border-box; /* ボーダーとパディングを幅に含める */
 }
 
 th {
@@ -42,6 +44,32 @@ td:first-child {
   color: #555;
 }
 
+/* 各列の幅を設定 */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 50px; /* Index列 */
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 25%; /* Column A */
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  width: 25%; /* Column B */
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+  width: 25%; /* Column C */
+}
+
+th:nth-child(5),
+td:nth-child(5) {
+  width: 100px; /* Status列 */
+}
+
 /* フォームの値を変更した状態では赤字に変更するのみ */
 .changed select {
   color: red !important;
@@ -68,27 +96,28 @@ td:first-child {
 /* 選択されたセル */
 td.selected-cell {
   background-color: #e0f2f7; /* 薄い青色 */
-  border: 2px solid #00bcd4; /* 青い枠線 */
-  outline: none; /* デフォルトのフォーカスアウトラインを削除 */
+  outline: 2px solid #00bcd4; /* 青い枠線 */
+  outline-offset: -1px; /* 枠線がセル内に表示されるように調整 */
 }
 
 /* 確認モードで選択され、かつ現在選択されているセル */
 td.selected-cell.selected-for-confirmation {
   background-color: #fff3e0; /* 薄いオレンジ色 */
-  border: 2px solid #ff9800; /* オレンジ色の枠線 */
+  outline: 2px solid #ff9800; /* オレンジ色の枠線 */
+  outline-offset: -1px; /* 枠線がセル内に表示されるように調整 */
 }
 
 td input, /* input要素のボーダーを確実に削除 */
 td select {
   width: 100%;
-  padding: 0; /* input/selectのパディングで調整するため0に */
+  padding: 6px 0px; /* input/selectのパディングを調整 */
   border: none !important; /* ボーダーを強制的に削除 */
   border-radius: 0; /* 角丸をなくす */
   background-color: transparent !important; /* 背景色を強制的に透明に */
   font-size: 13px;
   font-family: "Segoe UI", Arial, sans-serif; /* Excelのようなフォント */
   box-sizing: border-box; /* パディングとボーダーを幅に含める */
-  // outline: none; /* フォーカス時のアウトラインを削除 */
+  outline: none; /* フォーカス時のアウトラインを削除 */
 }
 
 td select {
