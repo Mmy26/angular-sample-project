@@ -65,6 +65,13 @@ td:first-child {
   background-color: #ffe6e6;
 }
 
+/* 選択されたセル */
+td.selected-cell {
+  background-color: #fff3e0; /* 薄いオレンジ色 */
+  border: 2px solid #ff9800; /* オレンジ色の枠線 */
+  outline: none; /* デフォルトのフォーカスアウトラインを削除 */
+}
+
 select {
   width: 100%;
   padding: 4px;

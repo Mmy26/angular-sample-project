@@ -1,12 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  HostListener,
+  ElementRef,
+  ViewChildren,
+  QueryList,
+} from '@angular/core';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-
   public statuses: string[] = [];
   public initialStatuses: string[] = [];
   public items: any[] = Array(20).fill(0); // 20個のフォームを作成するためのダミー配列
@@ -17,7 +23,13 @@ export class HomeComponent implements OnInit {
   public isConfirmedAndCleared: boolean[] = []; // 最終的に確定されて文字が消えたセル
   public selectedRowIndex: number | null = null; // 選択された行のインデックス
 
-  constructor() { }
+  public selectedCell: { row: number; col: number } = { row: 0, col: 0 }; // 選択されたセルの行と列
+  @ViewChildren('dataCell') dataCells!: QueryList<ElementRef>;
+
+  // 列の数を定義 (Index, Column A, Column B, Column C, Status)
+  private readonly NUM_COLUMNS = 5;
+
+  constructor(private el: ElementRef) {}
 
   ngOnInit(): void {
     // 初期値を設定
@@ -32,14 +44,72 @@ export class HomeComponent implements OnInit {
       this.data.push({
         'Column A': `Value A${index + 1}`,
         'Column B': `Value B${index + 1}`,
-        'Column C': `Value C${index + 1}`
+        'Column C': `Value C${index + 1}`,
       });
     });
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
+    ) {
+      event.preventDefault(); // デフォルトのスクロール動作を防止
+      this.moveSelection(event.key);
+    }
+  }
+
+  moveSelection(key: string): void {
+    let newRow = this.selectedCell.row;
+    let newCol = this.selectedCell.col;
+
+    switch (key) {
+      case 'ArrowUp':
+        newRow = Math.max(0, newRow - 1);
+        break;
+      case 'ArrowDown':
+        newRow = Math.min(this.items.length - 1, newRow + 1);
+        break;
+      case 'ArrowLeft':
+        newCol = Math.max(0, newCol - 1);
+        break;
+      case 'ArrowRight':
+        newCol = Math.min(this.NUM_COLUMNS - 1, newCol + 1);
+        break;
+    }
+
+    this.selectedCell = { row: newRow, col: newCol };
+    this.focusSelectedCell();
+  }
+
+  focusSelectedCell(): void {
+    // DOMが更新されるのを待ってからフォーカスを当てる
+    setTimeout(() => {
+      const cellIndex =
+        this.selectedCell.row * this.NUM_COLUMNS + this.selectedCell.col;
+      const cellElement = this.dataCells.toArray()[cellIndex];
+      if (cellElement) {
+        (cellElement.nativeElement as HTMLElement).focus();
+      }
+    }, 0);
   }
 
   // 行がクリックされたときの処理
   onRowClick(index: number): void {
     this.selectedRowIndex = index;
+  }
+
+  // セルがクリックされたときの処理
+  onCellClick(rowIndex: number, colIndex: number): void {
+    this.selectedCell = { row: rowIndex, col: colIndex };
+    if (
+      this.isConfirmationMode &&
+      this.isChanged(rowIndex) &&
+      !this.isConfirmedAndCleared[rowIndex]
+    ) {
+      this.selectedForConfirmation[rowIndex] =
+        !this.selectedForConfirmation[rowIndex];
+    }
   }
 
   // フォームの値が初期値から変更されたかどうか
@@ -60,13 +130,6 @@ export class HomeComponent implements OnInit {
     // 確認モードを終了するときは、選択状態をリセット
     if (!this.isConfirmationMode) {
       this.selectedForConfirmation.fill(false);
-    }
-  }
-
-  // 確認モードでセルがクリックされたときの処理
-  onCellClick(index: number): void {
-    if (this.isConfirmationMode && this.isChanged(index) && !this.isConfirmedAndCleared[index]) {
-      this.selectedForConfirmation[index] = !this.selectedForConfirmation[index];
     }
   }
 
