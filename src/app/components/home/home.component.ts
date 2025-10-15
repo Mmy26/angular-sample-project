@@ -31,8 +31,8 @@ export class HomeComponent implements OnInit {
   @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // status select要素への参照
 
   // 列の数を定義 (Index, Column A, Column B, Column C, Status)
-  private readonly NUM_COLUMNS = 5;
-  private readonly STATUS_COLUMN_INDEX = 4; // Status列のインデックス
+  private readonly NUM_COLUMNS = 21;
+  private readonly STATUS_COLUMN_INDEX = 20; // Status列のインデックス (0-indexed)
   private readonly STATUS_OPTIONS = ['OK', 'NG']; // Statusの選択肢
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
@@ -47,11 +47,15 @@ export class HomeComponent implements OnInit {
       this.isConfirmedAndCleared.push(false); // 最初はすべて未確定・未クリア
 
       // 新しいデータ項目を初期化
-      this.data.push({
-        'Column A': `Value A${index + 1}`,
-        'Column B': `Value B${index + 1}`,
-        'Column C': `Value C${index + 1}`,
-      });
+      const rowData: { [key: string]: string } = {};
+      for (let col = 1; col < this.NUM_COLUMNS; col++) {
+        if ((col - 1) % 3 === 2) {
+          // Select列はデータを持たない
+          continue;
+        }
+        rowData[`Column ${col}`] = `Value ${col}-${index + 1}`;
+      }
+      this.data.push(rowData);
     });
   }
 
@@ -152,9 +156,10 @@ export class HomeComponent implements OnInit {
           }
         } else if (
           this.selectedCell.col > 0 &&
-          this.selectedCell.col < this.STATUS_COLUMN_INDEX
+          this.selectedCell.col < this.STATUS_COLUMN_INDEX &&
+          (this.selectedCell.col - 1) % 3 !== 2 // Select列ではない場合
         ) {
-          // Column A, B, C のセルにフォーカスが当たった場合、編集モードを開始
+          // Input列にフォーカスが当たった場合、編集モードを開始
           this.startEditing(this.selectedCell.row, this.selectedCell.col);
         }
       }
@@ -211,16 +216,15 @@ export class HomeComponent implements OnInit {
 
   // 列のインデックスから列名を取得
   getColumnName(colIndex: number): string {
-    switch (colIndex) {
-      case 1:
-        return 'Column A';
-      case 2:
-        return 'Column B';
-      case 3:
-        return 'Column C';
-      default:
-        return '';
+    // Index列 (0) と Status列 (STATUS_COLUMN_INDEX) はデータを持たない
+    if (colIndex === 0 || colIndex === this.STATUS_COLUMN_INDEX) {
+      return '';
     }
+    // Input列の場合
+    if ((colIndex - 1) % 3 !== 2) {
+      return `Column ${colIndex}`;
+    }
+    return ''; // Select列はデータを持たない
   }
 
   // Status列の値を上下キーで変更する (MacのOption + 上下キー用)
@@ -250,7 +254,9 @@ export class HomeComponent implements OnInit {
   // セルがクリックされたときの処理
   onCellClick(rowIndex: number, colIndex: number): void {
     this.selectedCell = { row: rowIndex, col: colIndex };
+    // Status列で、確認モードがON、かつ変更があり、かつ未確定の場合のみ選択状態を切り替える
     if (
+      this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
       this.isConfirmationMode &&
       this.isChanged(rowIndex) &&
       !this.isConfirmedAndCleared[rowIndex]

@@ -16,6 +16,8 @@ td {
   font-size: 13px;
   white-space: nowrap; /* セル内のテキストを折り返さない */
   box-sizing: border-box; /* ボーダーとパディングを幅に含める */
+  overflow: hidden; /* コンテンツがセルからはみ出さないようにする */
+  // text-overflow: ellipsis; /* はみ出したテキストを省略記号で表示 */
 }
 
 th {
@@ -50,24 +52,55 @@ td:nth-child(1) {
   width: 50px; /* Index列 */
 }
 
+/* Input 2列 + Select 1列 のパターンを6回繰り返す */
+/* Input列 */
 th:nth-child(2),
-td:nth-child(2) {
-  width: 25%; /* Column A */
-}
-
+td:nth-child(2),
 th:nth-child(3),
-td:nth-child(3) {
-  width: 25%; /* Column B */
-}
-
-th:nth-child(4),
-td:nth-child(4) {
-  width: 25%; /* Column C */
-}
-
+td:nth-child(3),
 th:nth-child(5),
-td:nth-child(5) {
-  width: 100px; /* Status列 */
+td:nth-child(5),
+th:nth-child(6),
+td:nth-child(6),
+th:nth-child(8),
+td:nth-child(8),
+th:nth-child(9),
+td:nth-child(9),
+th:nth-child(11),
+td:nth-child(11),
+th:nth-child(12),
+td:nth-child(12),
+th:nth-child(14),
+td:nth-child(14),
+th:nth-child(15),
+td:nth-child(15),
+th:nth-child(17),
+td:nth-child(17),
+th:nth-child(18),
+td:nth-child(18) {
+  width: 100px; /* Input列 (450px / 12) */
+}
+
+/* Select列 */
+th:nth-child(4),
+td:nth-child(4),
+th:nth-child(7),
+td:nth-child(7),
+th:nth-child(10),
+td:nth-child(10),
+th:nth-child(13),
+td:nth-child(13),
+th:nth-child(16),
+td:nth-child(16),
+th:nth-child(19),
+td:nth-child(19) {
+  width: 100px; /* Select列 */
+}
+
+/* 最終Status列 (21列目) */
+th:nth-child(21),
+td:nth-child(21) {
+  width: 100px; /* 最終Status列 */
 }
 
 /* フォームの値を変更した状態では赤字に変更するのみ */
@@ -109,6 +142,7 @@ td.selected-cell.selected-for-confirmation {
 
 td input, /* input要素のボーダーを確実に削除 */
 td select {
+  display: block; /* 親のtdの幅いっぱいに広がるように設定 */
   width: 100%;
   padding: 6px 0px; /* input/selectのパディングを調整 */
   border: none !important; /* ボーダーを強制的に削除 */

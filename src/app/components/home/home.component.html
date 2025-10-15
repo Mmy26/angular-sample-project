@@ -4,9 +4,12 @@
   <thead>
     <tr>
       <th>Index</th>
-      <th>Column A</th>
-      <th>Column B</th>
-      <th>Column C</th>
+      <!-- Input 2列 + Select 1列 のパターンを6回繰り返す -->
+      <ng-container *ngFor="let col of [].constructor(6); let k = index">
+        <th>I{{ k * 2 + 1 }}</th>
+        <th>I{{ k * 2 + 2 }}</th>
+        <th>S{{ k + 1 }}</th>
+      </ng-container>
       <th>Status</th>
     </tr>
   </thead>
@@ -24,93 +27,106 @@
       >
         {{ i + 1 }}
       </td>
-      <td
-        #dataCell
-        tabindex="0"
-        (click)="onCellClick(i, 1)"
-        (dblclick)="startEditing(i, 1)"
-        [class.selected-cell]="selectedCell.row === i && selectedCell.col === 1"
-      >
-        <ng-container
-          *ngIf="
-            editingCell?.row === i && editingCell?.col === 1;
-            else viewModeA
+      <!-- Input 2列 + Select 1列 のパターンを6回繰り返す -->
+      <ng-container *ngFor="let col of [].constructor(6); let k = index">
+        <!-- Input 1 -->
+        <td
+          #dataCell
+          tabindex="0"
+          (click)="onCellClick(i, k * 3 + 1)"
+          (dblclick)="startEditing(i, k * 3 + 1)"
+          [class.selected-cell]="
+            selectedCell.row === i && selectedCell.col === k * 3 + 1
           "
         >
-          <input
-            [id]="'edit-input-' + i + '-1'"
-            [(ngModel)]="editedValue"
-            (blur)="saveEditedValue()"
-            (keydown.enter)="saveEditedValueAndMoveDown()"
-            (keydown.escape)="cancelEditing()"
-          />
-        </ng-container>
-        <ng-template #viewModeA>
-          {{ data[i]["Column A"] }}
-        </ng-template>
-      </td>
-      <td
-        #dataCell
-        tabindex="0"
-        (click)="onCellClick(i, 2)"
-        (dblclick)="startEditing(i, 2)"
-        [class.selected-cell]="selectedCell.row === i && selectedCell.col === 2"
-      >
-        <ng-container
-          *ngIf="
-            editingCell?.row === i && editingCell?.col === 2;
-            else viewModeB
+          <ng-container
+            *ngIf="
+              editingCell?.row === i && editingCell?.col === k * 3 + 1;
+              else viewModeInput1
+            "
+          >
+            <input
+              [id]="'edit-input-' + i + '-' + (k * 3 + 1)"
+              [(ngModel)]="editedValue"
+              (blur)="saveEditedValue()"
+              (keydown.enter)="saveEditedValueAndMoveDown()"
+              (keydown.escape)="cancelEditing()"
+            />
+          </ng-container>
+          <ng-template #viewModeInput1>
+            {{ data[i]["Column " + (k * 3 + 1)] }}
+          </ng-template>
+        </td>
+        <!-- Input 2 -->
+        <td
+          #dataCell
+          tabindex="0"
+          (click)="onCellClick(i, k * 3 + 2)"
+          (dblclick)="startEditing(i, k * 3 + 2)"
+          [class.selected-cell]="
+            selectedCell.row === i && selectedCell.col === k * 3 + 2
           "
         >
-          <input
-            [id]="'edit-input-' + i + '-2'"
-            [(ngModel)]="editedValue"
-            (blur)="saveEditedValue()"
-            (keydown.enter)="saveEditedValueAndMoveDown()"
-            (keydown.escape)="cancelEditing()"
-          />
-        </ng-container>
-        <ng-template #viewModeB>
-          {{ data[i]["Column B"] }}
-        </ng-template>
-      </td>
-      <td
-        #dataCell
-        tabindex="0"
-        (click)="onCellClick(i, 3)"
-        (dblclick)="startEditing(i, 3)"
-        [class.selected-cell]="selectedCell.row === i && selectedCell.col === 3"
-      >
-        <ng-container
-          *ngIf="
-            editingCell?.row === i && editingCell?.col === 3;
-            else viewModeC
+          <ng-container
+            *ngIf="
+              editingCell?.row === i && editingCell?.col === k * 3 + 2;
+              else viewModeInput2
+            "
+          >
+            <input
+              [id]="'edit-input-' + i + '-' + (k * 3 + 2)"
+              [(ngModel)]="editedValue"
+              (blur)="saveEditedValue()"
+              (keydown.enter)="saveEditedValueAndMoveDown()"
+              (keydown.escape)="cancelEditing()"
+            />
+          </ng-container>
+          <ng-template #viewModeInput2>
+            {{ data[i]["Column " + (k * 3 + 2)] }}
+          </ng-template>
+        </td>
+        <!-- Select -->
+        <td
+          #dataCell
+          tabindex="0"
+          [class.changed]="isChanged(i)"
+          [class.selected-for-confirmation]="selectedForConfirmation[i]"
+          [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
+          (click)="onCellClick(i, k * 3 + 3)"
+          [class.selected-cell]="
+            selectedCell.row === i && selectedCell.col === k * 3 + 3
           "
         >
-          <input
-            [id]="'edit-input-' + i + '-3'"
-            [(ngModel)]="editedValue"
-            (blur)="saveEditedValue()"
-            (keydown.enter)="saveEditedValueAndMoveDown()"
-            (keydown.escape)="cancelEditing()"
-          />
-        </ng-container>
-        <ng-template #viewModeC>
-          {{ data[i]["Column C"] }}
-        </ng-template>
-      </td>
+          <select
+            #statusSelect
+            [id]="'select-' + i + '-' + (k * 3 + 3)"
+            name="status-{{ i }}-{{ k * 3 + 3 }}"
+            [(ngModel)]="statuses[i]"
+            (ngModelChange)="onStatusChange(i); moveSelection('ArrowDown')"
+            [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
+            (keydown)="onStatusSelectKeydown($event, i)"
+          >
+            <option value="">--</option>
+            <option value="OK">OK</option>
+            <option value="NG">NG</option>
+          </select>
+        </td>
+      </ng-container>
+      <!-- Final Status Column -->
       <td
         #dataCell
         tabindex="0"
         [class.changed]="isChanged(i)"
         [class.selected-for-confirmation]="selectedForConfirmation[i]"
         [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
-        (click)="onCellClick(i, 4)"
-        [class.selected-cell]="selectedCell.row === i && selectedCell.col === 4"
+        (click)="onCellClick(i, 20)"
+        [class.selected-cell]="
+          selectedCell.row === i && selectedCell.col === 20
+        "
       >
         <select
           #statusSelect
-          name="status-{{ i }}"
+          name="status-{{ i }}-final"
           [(ngModel)]="statuses[i]"
           (ngModelChange)="onStatusChange(i); moveSelection('ArrowDown')"
           [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
