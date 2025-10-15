@@ -14,10 +14,9 @@ import {
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-  public statuses: string[] = [];
-  public initialStatuses: string[] = [];
   public items: any[] = Array(20).fill(0); // 20個のフォームを作成するためのダミー配列
   public data: { [key: string]: string }[] = []; // 新しいデータ項目を追加
+  public initialData: { [key: string]: string }[] = []; // データの初期値を保持
 
   public isConfirmationMode: boolean = false; // 確認モードのON/OFF
   public selectedForConfirmation: boolean[] = []; // 確認モードで選択されたセル
@@ -40,22 +39,22 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     // 初期値を設定
     this.items.forEach((_, index) => {
-      const initialValue = index % 2 === 0 ? 'OK' : 'NG'; // 例として初期値を交互に設定
-      this.statuses.push(initialValue);
-      this.initialStatuses.push(initialValue);
       this.selectedForConfirmation.push(false); // 最初はすべて未選択
       this.isConfirmedAndCleared.push(false); // 最初はすべて未確定・未クリア
 
       // 新しいデータ項目を初期化
       const rowData: { [key: string]: string } = {};
       for (let col = 1; col < this.NUM_COLUMNS; col++) {
-        if ((col - 1) % 3 === 2) {
-          // Select列はデータを持たない
-          continue;
+        if ((col - 1) % 3 === 2 || col === this.STATUS_COLUMN_INDEX) {
+          // Select列または最終Status列
+          rowData[`Column ${col}`] = index % 2 === 0 ? 'OK' : 'NG'; // 例として初期値を交互に設定
+        } else {
+          // Input列
+          rowData[`Column ${col}`] = `Value ${col}-${index + 1}`;
         }
-        rowData[`Column ${col}`] = `Value ${col}-${index + 1}`;
       }
       this.data.push(rowData);
+      this.initialData.push({ ...rowData }); // 初期データをディープコピーで保存
     });
   }
 
@@ -102,7 +101,7 @@ export class HomeComponent implements OnInit {
       } else if (
         this.isConfirmationMode &&
         this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
-        this.isChanged(this.selectedCell.row) &&
+        this.isChanged(this.selectedCell.row, this.selectedCell.col) &&
         !this.isConfirmedAndCleared[this.selectedCell.row]
       ) {
         // 確認モードでStatus列のセルが選択されており、変更があり、かつ未確定の場合
@@ -215,21 +214,19 @@ export class HomeComponent implements OnInit {
 
   // 列のインデックスから列名を取得
   getColumnName(colIndex: number): string {
-    // Index列 (0) と Status列 (STATUS_COLUMN_INDEX) はデータを持たない
-    if (colIndex === 0 || colIndex === this.STATUS_COLUMN_INDEX) {
+    // Index列 (0) はデータを持たない
+    if (colIndex === 0) {
       return '';
     }
-    // Input列の場合
-    if ((colIndex - 1) % 3 !== 2) {
-      return `Column ${colIndex}`;
-    }
-    return ''; // Select列はデータを持たない
+    // Input列、Select列、最終Status列はすべてデータを持つ
+    return `Column ${colIndex}`;
   }
 
   // Status列の値を上下キーで変更する (MacのOption + 上下キー用)
   changeStatusValue(direction: 'up' | 'down'): void {
     const currentRow = this.selectedCell.row;
-    const currentStatus = this.statuses[currentRow];
+    const columnName = this.getColumnName(this.STATUS_COLUMN_INDEX);
+    const currentStatus = this.data[currentRow][columnName];
 
     let currentIndex = this.STATUS_OPTIONS.indexOf(currentStatus);
 
@@ -241,8 +238,8 @@ export class HomeComponent implements OnInit {
         this.STATUS_OPTIONS.length;
     }
 
-    this.statuses[currentRow] = this.STATUS_OPTIONS[currentIndex];
-    this.onStatusChange(currentRow); // 変更イベントをトリガー
+    this.data[currentRow][columnName] = this.STATUS_OPTIONS[currentIndex];
+    this.onStatusChange(currentRow, this.STATUS_COLUMN_INDEX); // 変更イベントをトリガー
   }
 
   // 行がクリックされたときの処理
@@ -257,7 +254,7 @@ export class HomeComponent implements OnInit {
     if (
       this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
       this.isConfirmationMode &&
-      this.isChanged(rowIndex) &&
+      this.isChanged(rowIndex, colIndex) &&
       !this.isConfirmedAndCleared[rowIndex]
     ) {
       this.selectedForConfirmation[rowIndex] =
@@ -266,15 +263,18 @@ export class HomeComponent implements OnInit {
   }
 
   // フォームの値が初期値から変更されたかどうか
-  isChanged(index: number): boolean {
-    return this.statuses[index] !== this.initialStatuses[index];
+  isChanged(rowIndex: number, colIndex: number): boolean {
+    const columnName = this.getColumnName(colIndex);
+    return (
+      this.data[rowIndex][columnName] !== this.initialData[rowIndex][columnName]
+    );
   }
 
   // フォームの選択が変更されたときの処理
-  onStatusChange(index: number): void {
+  onStatusChange(rowIndex: number, colIndex: number): void {
     // 変更があった場合は、確認モードの選択状態と最終確定状態をリセット
-    this.selectedForConfirmation[index] = false;
-    this.isConfirmedAndCleared[index] = false;
+    this.selectedForConfirmation[rowIndex] = false;
+    this.isConfirmedAndCleared[rowIndex] = false;
   }
 
   // 確認モードのON/OFFを切り替える
@@ -291,7 +291,8 @@ export class HomeComponent implements OnInit {
     this.items.forEach((_, index) => {
       if (this.selectedForConfirmation[index]) {
         this.isConfirmedAndCleared[index] = true; // 最終確定して文字をクリア
-        this.initialStatuses[index] = this.statuses[index]; // 確定された値を新しい初期値として設定
+        const columnName = this.getColumnName(this.STATUS_COLUMN_INDEX);
+        this.initialData[index][columnName] = this.data[index][columnName]; // 確定された値を新しい初期値として設定
         this.selectedForConfirmation[index] = false; // 選択状態をリセット
       }
     });

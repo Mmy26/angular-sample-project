@@ -89,7 +89,7 @@
         <td
           #dataCell
           tabindex="0"
-          [class.changed]="isChanged(i)"
+          [class.changed]="isChanged(i, k * 3 + 3)"
           [class.selected-for-confirmation]="selectedForConfirmation[i]"
           [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
           (click)="onCellClick(i, k * 3 + 3)"
@@ -101,8 +101,10 @@
             #statusSelect
             [id]="'select-' + i + '-' + (k * 3 + 3)"
             name="status-{{ i }}-{{ k * 3 + 3 }}"
-            [(ngModel)]="statuses[i]"
-            (ngModelChange)="onStatusChange(i); moveSelection('ArrowDown')"
+            [(ngModel)]="data[i]['Column ' + (k * 3 + 3)]"
+            (ngModelChange)="
+              onStatusChange(i, k * 3 + 3); moveSelection('ArrowDown')
+            "
             [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
             (keydown)="onStatusSelectKeydown($event, i)"
           >
@@ -116,19 +118,21 @@
       <td
         #dataCell
         tabindex="0"
-        [class.changed]="isChanged(i)"
+        [class.changed]="isChanged(i, STATUS_COLUMN_INDEX)"
         [class.selected-for-confirmation]="selectedForConfirmation[i]"
         [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
-        (click)="onCellClick(i, 20)"
+        (click)="onCellClick(i, STATUS_COLUMN_INDEX)"
         [class.selected-cell]="
-          selectedCell.row === i && selectedCell.col === 20
+          selectedCell.row === i && selectedCell.col === STATUS_COLUMN_INDEX
         "
       >
         <select
           #statusSelect
           name="status-{{ i }}-final"
-          [(ngModel)]="statuses[i]"
-          (ngModelChange)="onStatusChange(i); moveSelection('ArrowDown')"
+          [(ngModel)]="data[i]['Column ' + STATUS_COLUMN_INDEX]"
+          (ngModelChange)="
+            onStatusChange(i, STATUS_COLUMN_INDEX); moveSelection('ArrowDown')
+          "
           [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
           (keydown)="onStatusSelectKeydown($event, i)"
         >
