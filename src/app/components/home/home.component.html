@@ -4,6 +4,10 @@
   <thead>
     <tr>
       <th>Index</th>
+      <!-- 追加10列 -->
+      <ng-container *ngFor="let col of [].constructor(10); let k = index">
+        <th>AddCol{{ k + 1 }}</th>
+      </ng-container>
       <!-- Input 2列 + Select 1列 のパターンを6回繰り返す -->
       <ng-container *ngFor="let col of [].constructor(6); let k = index">
         <th>I{{ k * 2 + 1 }}</th>
@@ -27,26 +31,41 @@
       >
         {{ i + 1 }}
       </td>
+      <!-- 追加10列 -->
+      <ng-container *ngFor="let col of [].constructor(10); let k = index">
+        <td
+          #dataCell
+          tabindex="0"
+          (click)="onCellClick(i, k + 1)"
+          [class.selected-cell]="
+            selectedCell.row === i && selectedCell.col === k + 1
+          "
+        >
+          {{ data[i]["Column " + (k + 1)] }}
+        </td>
+      </ng-container>
       <!-- Input 2列 + Select 1列 のパターンを6回繰り返す -->
       <ng-container *ngFor="let col of [].constructor(6); let k = index">
         <!-- Input 1 -->
         <td
           #dataCell
           tabindex="0"
-          (click)="onCellClick(i, k * 3 + 1)"
-          (dblclick)="startEditing(i, k * 3 + 1)"
+          (click)="onCellClick(i, ADDED_COLUMNS_COUNT + k * 3 + 1)"
+          (dblclick)="startEditing(i, ADDED_COLUMNS_COUNT + k * 3 + 1)"
           [class.selected-cell]="
-            selectedCell.row === i && selectedCell.col === k * 3 + 1
+            selectedCell.row === i &&
+            selectedCell.col === ADDED_COLUMNS_COUNT + k * 3 + 1
           "
         >
           <ng-container
             *ngIf="
-              editingCell?.row === i && editingCell?.col === k * 3 + 1;
+              editingCell?.row === i &&
+                editingCell?.col === ADDED_COLUMNS_COUNT + k * 3 + 1;
               else viewModeInput1
             "
           >
             <input
-              [id]="'edit-input-' + i + '-' + (k * 3 + 1)"
+              [id]="'edit-input-' + i + '-' + (ADDED_COLUMNS_COUNT + k * 3 + 1)"
               [(ngModel)]="editedValue"
               (blur)="saveEditedValue()"
               (keydown.enter)="saveEditedValueAndMoveDown()"
@@ -54,27 +73,29 @@
             />
           </ng-container>
           <ng-template #viewModeInput1>
-            {{ data[i]["Column " + (k * 3 + 1)] }}
+            {{ data[i]["Column " + (ADDED_COLUMNS_COUNT + k * 3 + 1)] }}
           </ng-template>
         </td>
         <!-- Input 2 -->
         <td
           #dataCell
           tabindex="0"
-          (click)="onCellClick(i, k * 3 + 2)"
-          (dblclick)="startEditing(i, k * 3 + 2)"
+          (click)="onCellClick(i, ADDED_COLUMNS_COUNT + k * 3 + 2)"
+          (dblclick)="startEditing(i, ADDED_COLUMNS_COUNT + k * 3 + 2)"
           [class.selected-cell]="
-            selectedCell.row === i && selectedCell.col === k * 3 + 2
+            selectedCell.row === i &&
+            selectedCell.col === ADDED_COLUMNS_COUNT + k * 3 + 2
           "
         >
           <ng-container
             *ngIf="
-              editingCell?.row === i && editingCell?.col === k * 3 + 2;
+              editingCell?.row === i &&
+                editingCell?.col === ADDED_COLUMNS_COUNT + k * 3 + 2;
               else viewModeInput2
             "
           >
             <input
-              [id]="'edit-input-' + i + '-' + (k * 3 + 2)"
+              [id]="'edit-input-' + i + '-' + (ADDED_COLUMNS_COUNT + k * 3 + 2)"
               [(ngModel)]="editedValue"
               (blur)="saveEditedValue()"
               (keydown.enter)="saveEditedValueAndMoveDown()"
@@ -82,28 +103,30 @@
             />
           </ng-container>
           <ng-template #viewModeInput2>
-            {{ data[i]["Column " + (k * 3 + 2)] }}
+            {{ data[i]["Column " + (ADDED_COLUMNS_COUNT + k * 3 + 2)] }}
           </ng-template>
         </td>
         <!-- Select -->
         <td
           #dataCell
           tabindex="0"
-          [class.changed]="isChanged(i, k * 3 + 3)"
+          [class.changed]="isChanged(i, ADDED_COLUMNS_COUNT + k * 3 + 3)"
           [class.selected-for-confirmation]="selectedForConfirmation[i]"
           [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
-          (click)="onCellClick(i, k * 3 + 3)"
+          (click)="onCellClick(i, ADDED_COLUMNS_COUNT + k * 3 + 3)"
           [class.selected-cell]="
-            selectedCell.row === i && selectedCell.col === k * 3 + 3
+            selectedCell.row === i &&
+            selectedCell.col === ADDED_COLUMNS_COUNT + k * 3 + 3
           "
         >
           <select
             #statusSelect
-            [id]="'select-' + i + '-' + (k * 3 + 3)"
-            name="status-{{ i }}-{{ k * 3 + 3 }}"
-            [(ngModel)]="data[i]['Column ' + (k * 3 + 3)]"
+            [id]="'select-' + i + '-' + (ADDED_COLUMNS_COUNT + k * 3 + 3)"
+            name="status-{{ i }}-{{ ADDED_COLUMNS_COUNT + k * 3 + 3 }}"
+            [(ngModel)]="data[i]['Column ' + (ADDED_COLUMNS_COUNT + k * 3 + 3)]"
             (ngModelChange)="
-              onStatusChange(i, k * 3 + 3); moveSelection('ArrowDown')
+              onStatusChange(i, ADDED_COLUMNS_COUNT + k * 3 + 3);
+              moveSelection('ArrowDown')
             "
             [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
             (keydown)="onStatusSelectKeydown($event, i)"

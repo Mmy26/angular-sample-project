@@ -52,54 +52,78 @@ td:nth-child(1) {
   width: 50px; /* Index列 */
 }
 
-/* Input 2列 + Select 1列 のパターンを6回繰り返す */
-/* Input列 */
+/* 追加10列 */
 th:nth-child(2),
 td:nth-child(2),
 th:nth-child(3),
 td:nth-child(3),
+th:nth-child(4),
+td:nth-child(4),
 th:nth-child(5),
 td:nth-child(5),
 th:nth-child(6),
 td:nth-child(6),
+th:nth-child(7),
+td:nth-child(7),
 th:nth-child(8),
 td:nth-child(8),
 th:nth-child(9),
 td:nth-child(9),
-th:nth-child(11),
-td:nth-child(11),
-th:nth-child(12),
-td:nth-child(12),
-th:nth-child(14),
-td:nth-child(14),
-th:nth-child(15),
-td:nth-child(15),
-th:nth-child(17),
-td:nth-child(17),
-th:nth-child(18),
-td:nth-child(18) {
-  width: 100px; /* Input列 (450px / 12) */
-}
-
-/* Select列 */
-th:nth-child(4),
-td:nth-child(4),
-th:nth-child(7),
-td:nth-child(7),
 th:nth-child(10),
 td:nth-child(10),
+th:nth-child(11),
+td:nth-child(11) {
+  width: 80px; /* 追加列 */
+}
+
+/* Input 2列 + Select 1列 のパターンを6回繰り返す */
+/* Input列 (12列目から) */
+th:nth-child(12),
+td:nth-child(12),
 th:nth-child(13),
 td:nth-child(13),
+th:nth-child(15),
+td:nth-child(15),
 th:nth-child(16),
 td:nth-child(16),
+th:nth-child(18),
+td:nth-child(18),
 th:nth-child(19),
-td:nth-child(19) {
+td:nth-child(19),
+th:nth-child(21),
+td:nth-child(21),
+th:nth-child(22),
+td:nth-child(22),
+th:nth-child(24),
+td:nth-child(24),
+th:nth-child(25),
+td:nth-child(25),
+th:nth-child(27),
+td:nth-child(27),
+th:nth-child(28),
+td:nth-child(28) {
+  width: 100px; /* Input列 */
+}
+
+/* Select列 (14列目から) */
+th:nth-child(14),
+td:nth-child(14),
+th:nth-child(17),
+td:nth-child(17),
+th:nth-child(20),
+td:nth-child(20),
+th:nth-child(23),
+td:nth-child(23),
+th:nth-child(26),
+td:nth-child(26),
+th:nth-child(29),
+td:nth-child(29) {
   width: 100px; /* Select列 */
 }
 
-/* 最終Status列 (21列目) */
-th:nth-child(21),
-td:nth-child(21) {
+/* 最終Status列 (31列目) */
+th:nth-child(31),
+td:nth-child(31) {
   width: 100px; /* 最終Status列 */
 }
 

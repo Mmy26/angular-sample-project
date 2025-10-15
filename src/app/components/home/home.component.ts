@@ -29,9 +29,10 @@ export class HomeComponent implements OnInit {
   @ViewChildren('dataCell') dataCells!: QueryList<ElementRef>;
   @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // status select要素への参照
 
-  // 列の数を定義 (Index, Column A, Column B, Column C, Status)
-  private readonly NUM_COLUMNS = 21;
-  private readonly STATUS_COLUMN_INDEX = 20; // Status列のインデックス (0-indexed)
+  // 列の数を定義 (Index, 追加10列, Input 2列 + Select 1列 * 6回, Status)
+  private readonly NUM_COLUMNS = 31; // 1 (Index) + 10 (追加列) + 18 (6*3) + 1 (Status) = 30列 + 1 (0-indexed)
+  private readonly ADDED_COLUMNS_COUNT = 10; // 追加する列の数
+  private readonly STATUS_COLUMN_INDEX = 30; // Status列のインデックス (0-indexed)
   private readonly STATUS_OPTIONS = ['OK', 'NG']; // Statusの選択肢
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
@@ -44,15 +45,28 @@ export class HomeComponent implements OnInit {
 
       // 新しいデータ項目を初期化
       const rowData: { [key: string]: string } = {};
-      for (let col = 1; col < this.NUM_COLUMNS; col++) {
-        if ((col - 1) % 3 === 2 || col === this.STATUS_COLUMN_INDEX) {
-          // Select列または最終Status列
-          rowData[`Column ${col}`] = index % 2 === 0 ? 'OK' : 'NG'; // 例として初期値を交互に設定
-        } else {
-          // Input列
-          rowData[`Column ${col}`] = `Value ${col}-${index + 1}`;
-        }
+      // 追加列のデータを初期化 (Column 1 から Column 10)
+      for (let col = 1; col <= this.ADDED_COLUMNS_COUNT; col++) {
+        rowData[`Column ${col}`] = `AddValue ${col}-${index + 1}`;
       }
+
+      // 既存のInput/Select列のデータを初期化 (Column 11 から Column 28)
+      // 既存のInput 2列 + Select 1列 のパターンを6回繰り返す
+      for (let k = 0; k < 6; k++) {
+        const baseColIndex = this.ADDED_COLUMNS_COUNT + k * 3 + 1; // 10 (追加列) + k*3 + 1
+        rowData[`Column ${baseColIndex}`] = `Value ${baseColIndex}-${
+          index + 1
+        }`; // Input 1
+        rowData[`Column ${baseColIndex + 1}`] = `Value ${baseColIndex + 1}-${
+          index + 1
+        }`; // Input 2
+        rowData[`Column ${baseColIndex + 2}`] = index % 2 === 0 ? 'OK' : 'NG'; // Select
+      }
+
+      // 最終Status列のデータを初期化 (Column 30)
+      rowData[`Column ${this.STATUS_COLUMN_INDEX}`] =
+        index % 2 === 0 ? 'OK' : 'NG';
+
       this.data.push(rowData);
       this.initialData.push({ ...rowData }); // 初期データをディープコピーで保存
     });
@@ -141,7 +155,10 @@ export class HomeComponent implements OnInit {
   focusSelectedCell(): void {
     // DOMが更新されるのを待ってからフォーカスを当てる
     setTimeout(() => {
-      const cellIndex = this.selectedCell.row * 20 + this.selectedCell.col; // 各行の<td>要素は20個
+      // Index列 (0) を除く各行の<td>要素の総数
+      const cellsPerRow = this.NUM_COLUMNS - 1;
+      const cellIndex =
+        this.selectedCell.row * cellsPerRow + this.selectedCell.col;
       const cellElement = this.dataCells.toArray()[cellIndex];
       if (cellElement) {
         const nativeElement = cellElement.nativeElement as HTMLElement;
@@ -155,7 +172,7 @@ export class HomeComponent implements OnInit {
         } else if (
           this.selectedCell.col > 0 &&
           this.selectedCell.col < this.STATUS_COLUMN_INDEX &&
-          (this.selectedCell.col - 1) % 3 !== 2 // Select列ではない場合
+          (this.selectedCell.col - 1 - this.ADDED_COLUMNS_COUNT) % 3 !== 2 // Select列ではない場合 (追加列を考慮)
         ) {
           // Input列にフォーカスが当たった場合、編集モードを開始
           this.startEditing(this.selectedCell.row, this.selectedCell.col);
