@@ -133,6 +133,13 @@ export class HomeComponent implements OnInit {
     let newRow = this.selectedCell.row;
     let newCol = this.selectedCell.col;
 
+    const isFocusableColumn = (col: number): boolean => {
+      return (
+        (col > this.ADDED_COLUMNS_COUNT && col < this.STATUS_COLUMN_INDEX) || // Input/Select列
+        col === this.STATUS_COLUMN_INDEX // Status列
+      );
+    };
+
     switch (key) {
       case 'ArrowUp':
         newRow = Math.max(0, newRow - 1);
@@ -142,9 +149,21 @@ export class HomeComponent implements OnInit {
         break;
       case 'ArrowLeft':
         newCol = Math.max(0, newCol - 1);
+        // フォーカスできない列をスキップ
+        while (newCol > 0 && !isFocusableColumn(newCol)) {
+          newCol--;
+        }
+        // もしIndex列 (0) に到達したら、最初のフォーカス可能な列に移動
+        if (newCol === 0 && !isFocusableColumn(newCol)) {
+          newCol = this.ADDED_COLUMNS_COUNT + 1; // 最初のInput列
+        }
         break;
       case 'ArrowRight':
         newCol = Math.min(this.NUM_COLUMNS - 1, newCol + 1);
+        // フォーカスできない列をスキップ
+        while (newCol < this.NUM_COLUMNS - 1 && !isFocusableColumn(newCol)) {
+          newCol++;
+        }
         break;
     }
 
@@ -162,7 +181,15 @@ export class HomeComponent implements OnInit {
       const cellElement = this.dataCells.toArray()[cellIndex];
       if (cellElement) {
         const nativeElement = cellElement.nativeElement as HTMLElement;
-        nativeElement.focus();
+        // Index列 (0) または追加列 (1-10) の場合はフォーカスしない
+        if (
+          this.selectedCell.col === 0 ||
+          (this.selectedCell.col > 0 &&
+            this.selectedCell.col <= this.ADDED_COLUMNS_COUNT)
+        ) {
+          return;
+        }
+
         // Status列の場合、select要素にフォーカスを当てる
         if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
           const selectElement = nativeElement.querySelector('select');
@@ -170,7 +197,7 @@ export class HomeComponent implements OnInit {
             selectElement.focus();
           }
         } else if (
-          this.selectedCell.col > 0 &&
+          this.selectedCell.col > this.ADDED_COLUMNS_COUNT && // 追加列より大きい
           this.selectedCell.col < this.STATUS_COLUMN_INDEX &&
           (this.selectedCell.col - 1 - this.ADDED_COLUMNS_COUNT) % 3 !== 2 // Select列ではない場合 (追加列を考慮)
         ) {
@@ -193,6 +220,11 @@ export class HomeComponent implements OnInit {
 
   // 編集モードを開始
   startEditing(row: number, col: number): void {
+    // Index列 (0) または追加列 (1-10) の場合は編集モードを開始しない
+    if (col === 0 || (col > 0 && col <= this.ADDED_COLUMNS_COUNT)) {
+      return;
+    }
+
     this.editingCell = { row, col };
     const columnName = this.getColumnName(col);
     this.editedValue = this.data[row][columnName];
