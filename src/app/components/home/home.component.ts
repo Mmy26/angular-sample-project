@@ -142,8 +142,7 @@ export class HomeComponent implements OnInit {
   focusSelectedCell(): void {
     // DOMが更新されるのを待ってからフォーカスを当てる
     setTimeout(() => {
-      const cellIndex =
-        this.selectedCell.row * this.NUM_COLUMNS + this.selectedCell.col;
+      const cellIndex = this.selectedCell.row * 20 + this.selectedCell.col; // 各行の<td>要素は20個
       const cellElement = this.dataCells.toArray()[cellIndex];
       if (cellElement) {
         const nativeElement = cellElement.nativeElement as HTMLElement;
