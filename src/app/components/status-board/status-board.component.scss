@@ -1,43 +1,113 @@
-.container {
-  width: 400px;
-  margin: 15px;
-  display: inline-block;
-  vertical-align: top;
-  border: 1px solid #ddd; /* Added for visibility */
-  padding: 10px; /* Added for visibility */
-}
-
-.column-header {
+.status-board {
   display: flex;
-  flex-direction: column;
-  min-height: 120px; /* Adjust this value as needed to align headers */
-  margin-bottom: 10px; /* Space between header and the list */
+  flex-direction: column; /* ステータス行を縦に並べる */
+  align-items: flex-start;
+  padding: 15px;
 }
 
-.list {
-  min-height: 60px;
-  background: #e0e0e0; /* Changed to a lighter color for testing */
-  border-radius: 4px;
-  display: block;
-  overflow: hidden;
-  border: 2px solid green; /* Added for visibility */
+.status-row {
+  width: 100%; /* 親要素の幅いっぱいに広げる */
+  margin-bottom: 15px; /* 各ステータス行間のスペース */
+  border: 1px solid #ddd;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
-.box {
-  padding: 20px 10px;
-  border-bottom: solid 1px #ccc;
-  color: #333; /* Changed for better contrast */
+.status-header {
   display: flex;
-  flex-direction: row;
+  flex-direction: row; /* ヘッダー内の要素を横に並べる */
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 10px;
+  min-height: 40px; /* ヘッダーの最小高さを確保 */
+}
+
+.status-header h2 {
+  margin: 0;
+  flex-grow: 1; /* タイトルが利用可能なスペースを占める */
+}
+
+.add-task {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 要素間のスペース */
+}
+
+.add-task input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+
+.add-task input[type="number"] {
+  width: 60px; /* 優先度入力フィールドの幅を調整 */
+  text-align: center;
+}
+
+.add-task button {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-task button:hover {
+  background-color: #0056b3;
+}
+
+.task-list-horizontal {
+  min-height: 60px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  display: flex; /* タスクアイテムを横に並べる */
+  flex-direction: row;
+  flex-wrap: wrap; /* タスクアイテムが多すぎる場合に折り返す */
+  gap: 10px; /* タスクアイテム間のスペース */
+  padding: 10px;
+  border: 2px solid green;
+  overflow-x: auto; /* 横スクロールを可能にする */
+}
+
+.task-box {
+  padding: 10px 15px; /* パディングを調整 */
+  border: solid 1px #ccc; /* 下線ではなく枠線に変更 */
+  color: #333;
+  display: flex;
+  flex-direction: column; /* タスク内容とアクションを縦に並べる */
+  align-items: flex-start;
+  justify-content: space-between;
   box-sizing: border-box;
-  cursor: grab; /* Changed cursor for better UX */
-  background: #f9f9f9; /* Changed to a lighter color for testing */
+  cursor: grab;
+  background: #f9f9f9;
   font-size: 14px;
-  margin-bottom: 5px; /* Added for spacing */
-  border-radius: 4px; /* Added for aesthetics */
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1); /* Added for depth */
+  margin-bottom: 0; /* 横並びなので下マージンは不要 */
+  border-radius: 4px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  min-width: 180px; /* タスクボックスの最小幅 */
+  max-width: 250px; /* タスクボックスの最大幅 */
+}
+
+.task-box .actions {
+  margin-top: 10px; /* タスク内容とボタンの間にスペース */
+  display: flex;
+  gap: 5px;
+}
+
+.task-box .actions button {
+  padding: 5px 10px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.task-box .actions button:hover {
+  background-color: #5a6268;
 }
 
 .cdk-drag-preview {
@@ -55,55 +125,9 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.list.cdk-drop-list-dragging .box:not(.cdk-drag-placeholder) {
+.task-list-horizontal.cdk-drop-list-dragging
+  .task-box:not(.cdk-drag-placeholder) {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-.board {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-}
-
-.add-task {
-  margin-bottom: 10px;
-  display: flex;
-}
-
-.add-task input {
-  flex-grow: 1;
-  margin-right: 10px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.add-task button {
-  padding: 8px 12px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-task button:hover {
-  background-color: #0056b3;
-}
-
-.box .actions button {
-  margin-left: 5px;
-  padding: 5px 10px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.box .actions button:hover {
-  background-color: #5a6268;
 }
 
 .reject-header {
@@ -111,6 +135,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  width: 100%; /* Rejectヘッダーが幅いっぱいに広がるように */
 }
 
 /* The switch - the box around the slider */
@@ -177,13 +202,14 @@ input:checked + .slider:before {
 }
 
 .add-column-section {
-  margin: 15px;
+  margin-top: 15px; /* 上部にスペース */
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #f0f0f0;
   display: flex;
   align-items: center;
+  width: 100%; /* 親要素の幅いっぱいに広げる */
 }
 
 .add-column-section input {
@@ -196,7 +222,7 @@ input:checked + .slider:before {
 
 .add-column-section button {
   padding: 8px 12px;
-  background-color: #28a745; /* Green color for add column button */
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 4px;

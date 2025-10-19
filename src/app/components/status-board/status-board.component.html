@@ -1,63 +1,111 @@
-<div class="board">
-  <div class="container" *ngFor="let column of columns">
-    <div class="column-header">
-      <div class="reject-header" *ngIf="column.isRejectColumn">
-        <h2>{{ column.title }}</h2>
+<div class="status-board">
+  <!-- 各ステータス行を縦に並べる -->
+  <div class="status-row" *ngFor="let statusColumn of statusColumns">
+    <div class="status-header">
+      <div class="reject-header" *ngIf="statusColumn.isRejectColumn">
+        <h2>{{ statusColumn.title }}</h2>
         <label class="switch">
-          <input type="checkbox" [(ngModel)]="column.isRejectEnabled" />
+          <input type="checkbox" [(ngModel)]="statusColumn.isRejectEnabled" />
           <span class="slider round"></span>
         </label>
       </div>
-      <h2 *ngIf="!column.isRejectColumn">{{ column.title }}</h2>
-      <div class="add-task" *ngIf="!column.isRejectColumn">
+      <h2 *ngIf="!statusColumn.isRejectColumn">{{ statusColumn.title }}</h2>
+      <div class="add-task" *ngIf="!statusColumn.isRejectColumn">
         <input
           type="text"
-          [(ngModel)]="newTask"
+          [(ngModel)]="newTaskContent"
           placeholder="新しいタスクを追加"
         />
-        <button (click)="addTask(column)">追加</button>
+        <input
+          type="number"
+          [(ngModel)]="newTaskPriority"
+          placeholder="優先度"
+          min="1"
+        />
+        <button (click)="addTask(statusColumn)">追加</button>
       </div>
     </div>
+
+    <!-- 各ステータス内のタスクアイテムを横に並べる -->
     <div
       cdkDropList
-      [id]="column.id"
-      [cdkDropListData]="column.data"
+      [id]="statusColumn.id"
+      [cdkDropListData]="getTasksByStatus(statusColumn.id)"
       [cdkDropListConnectedTo]="getConnectedListIds()"
-      class="list"
+      class="task-list-horizontal"
       (cdkDropListDropped)="drop($event)"
+      cdkDropListOrientation="horizontal"
     >
-      <div class="box" *ngFor="let item of column.data; let i = index" cdkDrag>
-        <ng-container
-          *ngIf="
-            editingTask?.columnId === column.id && editingTask?.index === i;
-            else showTask
-          "
-        >
+      <div
+        class="task-box"
+        *ngFor="let task of getTasksByStatus(statusColumn.id); let i = index"
+        cdkDrag
+        [cdkDragData]="task"
+      >
+        <ng-container *ngIf="editingTask?.taskId === task.id; else showTask">
           <input
             type="text"
-            [ngModel]="item"
-            (ngModelChange)="saveTask(column.id, i, $event)"
-            (blur)="cancelEdit()"
-            (keyup.enter)="saveTask(column.id, i, $event)"
+            [(ngModel)]="editingTask.currentContent"
+            (blur)="
+              saveTask(
+                editingTask.taskId,
+                editingTask.currentContent,
+                editingTask.currentPriority
+              )
+            "
+            (keyup.enter)="
+              saveTask(
+                editingTask.taskId,
+                editingTask.currentContent,
+                editingTask.currentPriority
+              )
+            "
+          />
+          <input
+            type="number"
+            [(ngModel)]="editingTask.currentPriority"
+            (blur)="
+              saveTask(
+                editingTask.taskId,
+                editingTask.currentContent,
+                editingTask.currentPriority
+              )
+            "
+            (keyup.enter)="
+              saveTask(
+                editingTask.taskId,
+                editingTask.currentContent,
+                editingTask.currentPriority
+              )
+            "
+            min="1"
           />
           <button (click)="cancelEdit()">キャンセル</button>
         </ng-container>
         <ng-template #showTask>
-          {{ item }}
+          {{ task.content }} (P: {{ task.priority }})
           <div class="actions">
-            <button (click)="editTask(column.id, i, item)">編集</button>
-            <button (click)="deleteTask(column.id, i)">削除</button>
+            <button
+              (click)="
+                editTask(task.id, task.statusId, task.content, task.priority)
+              "
+            >
+              編集
+            </button>
+            <button (click)="deleteTask(task.id)">削除</button>
           </div>
         </ng-template>
       </div>
     </div>
   </div>
+
+  <!-- 新しいステータス列を追加するセクション -->
   <div class="add-column-section">
     <input
       type="text"
       [(ngModel)]="newColumnTitle"
-      placeholder="新しい枠のタイトル"
+      placeholder="新しいステータスのタイトル"
     />
-    <button (click)="addColumn()">枠を追加</button>
+    <button (click)="addColumn()">ステータスを追加</button>
   </div>
 </div>
