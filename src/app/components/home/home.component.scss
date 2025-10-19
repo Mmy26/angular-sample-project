@@ -143,18 +143,6 @@ td:nth-child(29) {
   width: 100px; /* Select列 */
 }
 
-/*
-  【最終Status列の幅設定】
-  この列はテーブルの最終列として固定されています。
-  `home.component.ts` の `STATUS_COLUMN_INDEX` 定数と `NUM_COLUMNS` 定数の変更に合わせて、
-  `nth-child()` の値を更新する必要があります。
-  現在の設定では、31列目です。
-*/
-th:nth-child(31),
-td:nth-child(31) {
-  width: 100px; /* 最終Status列 */
-}
-
 /* フォームの値を変更した状態では赤字に変更するのみ */
 .changed select {
   color: red !important;

@@ -27,28 +27,23 @@ export class HomeComponent implements OnInit {
   public editingCell: { row: number; col: number } | null = null; // 編集中のセルの行と列
   public editedValue: string = ''; // 編集中のセルの値
   @ViewChildren('dataCell') dataCells!: QueryList<ElementRef>;
-  @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // status select要素への参照
+  @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // すべてのSelectbox要素への参照
 
   // 【重要】テーブルの列構成を変更する際の定数定義
   // home.component.html のコメントと合わせて変更してください。
 
   // テーブル全体の列数 (0-indexedのため、実際の列数より1大きい値)
-  // 例: Index(1) + 追加列(10) + Input/Selectパターン(6*3=18) + Status(1) = 30列。0-indexedなので30。
+  // 例: Index(1) + 追加列(10) + Input/Selectパターン(6*3=18) = 29列。0-indexedなので29。
   //     つまり、実際の列数は `NUM_COLUMNS` の値 + 1 となります。
   // 列数を変更する場合は、この値を再計算して更新してください。
-  private readonly NUM_COLUMNS = 31;
+  private readonly NUM_COLUMNS = 29; // Status列削除に伴い31 -> 29に変更 (Index 1 + 追加10 + Input/Select 18 = 29)
 
   // 追加列の数
   // home.component.html の `[].constructor(10)` の `10` と同じ値にしてください。
   private readonly ADDED_COLUMNS_COUNT = 10;
 
-  // 最終Status列のインデックス (0-indexed)
-  // この値は `NUM_COLUMNS` - 1 となります。
-  // 列数を変更する場合は、この値を再計算して更新してください。
-  private readonly STATUS_COLUMN_INDEX = 30;
-
-  // Status列の選択肢
-  private readonly STATUS_OPTIONS = ['OK', 'NG'];
+  // Selectboxの選択肢 (Status列の選択肢を流用)
+  private readonly SELECT_OPTIONS = ['OK', 'NG'];
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
@@ -78,10 +73,6 @@ export class HomeComponent implements OnInit {
         rowData[`Column ${baseColIndex + 2}`] = index % 2 === 0 ? 'OK' : 'NG'; // Select
       }
 
-      // 最終Status列のデータを初期化 (Column 30)
-      rowData[`Column ${this.STATUS_COLUMN_INDEX}`] =
-        index % 2 === 0 ? 'OK' : 'NG';
-
       this.data.push(rowData);
       this.initialData.push({ ...rowData }); // 初期データをディープコピーで保存
     });
@@ -97,24 +88,28 @@ export class HomeComponent implements OnInit {
       event.preventDefault();
       this.moveSelection(event.key);
     }
-    // MacでOption + 上下キーで値を変更
+    // MacでOption + 上下キーでSelectboxの値を変更
     else if (
       event.altKey &&
       (event.key === 'ArrowUp' || event.key === 'ArrowDown')
     ) {
       if (
-        this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+        this.isSelectColumn(this.selectedCell.col) &&
         !this.isConfirmationMode
       ) {
         event.preventDefault();
-        this.changeStatusValue(event.key === 'ArrowUp' ? 'up' : 'down');
+        this.changeSelectValue(
+          this.selectedCell.row,
+          this.selectedCell.col,
+          event.key === 'ArrowUp' ? 'up' : 'down'
+        );
       }
     }
-    // WindowsでAlt + Downでドロップダウンを開く
+    // WindowsでAlt + DownでSelectboxのドロップダウンを開く
     else if (event.altKey && event.key === 'ArrowDown') {
-      if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
+      if (this.isSelectColumn(this.selectedCell.col)) {
         event.preventDefault();
-        this.openStatusDropdown(this.selectedCell.row);
+        this.openSelectDropdown(this.selectedCell.row, this.selectedCell.col);
       }
     } else if (event.key === 'Enter') {
       event.preventDefault();
@@ -122,18 +117,18 @@ export class HomeComponent implements OnInit {
         // 編集中のセルがある場合は編集を確定し、真下のセルに移動
         this.saveEditedValueAndMoveDown();
       } else if (
-        this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+        this.isSelectColumn(this.selectedCell.col) &&
         !this.isConfirmationMode
       ) {
-        // Status列のselect要素でEnterが押された場合、真下のセルに移動
+        // Selectbox列でEnterが押された場合、真下のセルに移動
         this.moveSelection('ArrowDown');
       } else if (
         this.isConfirmationMode &&
-        this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+        this.isSelectColumn(this.selectedCell.col) &&
         this.isChanged(this.selectedCell.row, this.selectedCell.col) &&
         !this.isConfirmedAndCleared[this.selectedCell.row]
       ) {
-        // 確認モードでStatus列のセルが選択されており、変更があり、かつ未確定の場合
+        // 確認モードでSelectbox列のセルが選択されており、変更があり、かつ未確定の場合
         this.selectedForConfirmation[this.selectedCell.row] =
           !this.selectedForConfirmation[this.selectedCell.row];
       }
@@ -149,10 +144,7 @@ export class HomeComponent implements OnInit {
     let newCol = this.selectedCell.col;
 
     const isFocusableColumn = (col: number): boolean => {
-      return (
-        (col > this.ADDED_COLUMNS_COUNT && col < this.STATUS_COLUMN_INDEX) || // Input/Select列
-        col === this.STATUS_COLUMN_INDEX // Status列
-      );
+      return col > this.ADDED_COLUMNS_COUNT; // Input/Select列
     };
 
     switch (key) {
@@ -205,16 +197,16 @@ export class HomeComponent implements OnInit {
           return;
         }
 
-        // Status列の場合、select要素にフォーカスを当てる
-        if (this.selectedCell.col === this.STATUS_COLUMN_INDEX) {
+        // Selectbox列の場合、select要素にフォーカスを当てる
+        if (this.isSelectColumn(this.selectedCell.col)) {
           const selectElement = nativeElement.querySelector('select');
           if (selectElement) {
             selectElement.focus();
           }
         } else if (
           this.selectedCell.col > this.ADDED_COLUMNS_COUNT && // 追加列より大きい
-          this.selectedCell.col < this.STATUS_COLUMN_INDEX &&
-          (this.selectedCell.col - 1 - this.ADDED_COLUMNS_COUNT) % 3 !== 2 // Select列ではない場合 (追加列を考慮)
+          this.selectedCell.col < this.NUM_COLUMNS &&
+          !this.isSelectColumn(this.selectedCell.col) // Select列ではない場合
         ) {
           // Input列にフォーカスが当たった場合、編集モードを開始
           this.startEditing(this.selectedCell.row, this.selectedCell.col);
@@ -223,13 +215,29 @@ export class HomeComponent implements OnInit {
     }, 0);
   }
 
-  // Alt + Downでドロップダウンを開く
-  openStatusDropdown(rowIndex: number): void {
-    const selectElement = this.statusSelects.toArray()[rowIndex].nativeElement;
-    if (selectElement) {
-      // プログラム的にクリックイベントを発生させてドロップダウンを開く
-      // Note: `select.focus()`はドロップダウンを開かないため、`click()`を使用
-      selectElement.click();
+  // Selectbox列かどうかを判定するヘルパー
+  isSelectColumn(colIndex: number): boolean {
+    // Input 2列 + Select 1列 のパターンで、Select列は (colIndex - 1 - ADDED_COLUMNS_COUNT) % 3 === 2 となる
+    return (
+      colIndex > this.ADDED_COLUMNS_COUNT &&
+      (colIndex - 1 - this.ADDED_COLUMNS_COUNT) % 3 === 2
+    );
+  }
+
+  // Alt + DownでSelectboxのドロップダウンを開く
+  openSelectDropdown(rowIndex: number, colIndex: number): void {
+    // `statusSelects` は QueryList<ElementRef> なので、nativeElement を直接取得
+    // `dataCells` から該当するtd要素を取得し、その中のselect要素を探す
+    const cellsPerRow = this.NUM_COLUMNS - 1;
+    const cellIndex = rowIndex * cellsPerRow + colIndex;
+    const cellElement = this.dataCells.toArray()[cellIndex];
+
+    if (cellElement) {
+      const selectElement = cellElement.nativeElement.querySelector('select');
+      if (selectElement) {
+        selectElement.focus(); // フォーカスを当ててから
+        selectElement.click(); // クリックイベントを発生させてドロップダウンを開く
+      }
     }
   }
 
@@ -282,28 +290,31 @@ export class HomeComponent implements OnInit {
     if (colIndex === 0) {
       return '';
     }
-    // Input列、Select列、最終Status列はすべてデータを持つ
+    // Input列、Select列はすべてデータを持つ
     return `Column ${colIndex}`;
   }
 
-  // Status列の値を上下キーで変更する (MacのOption + 上下キー用)
-  changeStatusValue(direction: 'up' | 'down'): void {
-    const currentRow = this.selectedCell.row;
-    const columnName = this.getColumnName(this.STATUS_COLUMN_INDEX);
-    const currentStatus = this.data[currentRow][columnName];
+  // Selectboxの値を上下キーで変更する (MacのOption + 上下キー用)
+  changeSelectValue(
+    rowIndex: number,
+    colIndex: number,
+    direction: 'up' | 'down'
+  ): void {
+    const columnName = this.getColumnName(colIndex);
+    const currentStatus = this.data[rowIndex][columnName];
 
-    let currentIndex = this.STATUS_OPTIONS.indexOf(currentStatus);
+    let currentIndex = this.SELECT_OPTIONS.indexOf(currentStatus);
 
     if (direction === 'down') {
-      currentIndex = (currentIndex + 1) % this.STATUS_OPTIONS.length;
+      currentIndex = (currentIndex + 1) % this.SELECT_OPTIONS.length;
     } else if (direction === 'up') {
       currentIndex =
-        (currentIndex - 1 + this.STATUS_OPTIONS.length) %
-        this.STATUS_OPTIONS.length;
+        (currentIndex - 1 + this.SELECT_OPTIONS.length) %
+        this.SELECT_OPTIONS.length;
     }
 
-    this.data[currentRow][columnName] = this.STATUS_OPTIONS[currentIndex];
-    this.onStatusChange(currentRow, this.STATUS_COLUMN_INDEX); // 変更イベントをトリガー
+    this.data[rowIndex][columnName] = this.SELECT_OPTIONS[currentIndex];
+    this.onStatusChange(rowIndex, colIndex); // 変更イベントをトリガー
   }
 
   // 行がクリックされたときの処理
@@ -314,9 +325,9 @@ export class HomeComponent implements OnInit {
   // セルがクリックされたときの処理
   onCellClick(rowIndex: number, colIndex: number): void {
     this.selectedCell = { row: rowIndex, col: colIndex };
-    // Status列で、確認モードがON、かつ変更があり、かつ未確定の場合のみ選択状態を切り替える
+    // Selectbox列で、確認モードがON、かつ変更があり、かつ未確定の場合のみ選択状態を切り替える
     if (
-      this.selectedCell.col === this.STATUS_COLUMN_INDEX &&
+      this.isSelectColumn(this.selectedCell.col) &&
       this.isConfirmationMode &&
       this.isChanged(rowIndex, colIndex) &&
       !this.isConfirmedAndCleared[rowIndex]
@@ -355,16 +366,30 @@ export class HomeComponent implements OnInit {
     this.items.forEach((_, index) => {
       if (this.selectedForConfirmation[index]) {
         this.isConfirmedAndCleared[index] = true; // 最終確定して文字をクリア
-        const columnName = this.getColumnName(this.STATUS_COLUMN_INDEX);
-        this.initialData[index][columnName] = this.data[index][columnName]; // 確定された値を新しい初期値として設定
+        // 確定された値を新しい初期値として設定
+        // Selectbox列の値を更新する必要があるため、すべてのSelectbox列をループ
+        for (
+          let col = this.ADDED_COLUMNS_COUNT + 1;
+          col < this.NUM_COLUMNS;
+          col++
+        ) {
+          if (this.isSelectColumn(col)) {
+            const columnName = this.getColumnName(col);
+            this.initialData[index][columnName] = this.data[index][columnName];
+          }
+        }
         this.selectedForConfirmation[index] = false; // 選択状態をリセット
       }
     });
     this.isConfirmationMode = false; // 確認モードを終了
   }
 
-  // Status selectボックスのキーダウンイベント
-  onStatusSelectKeydown(event: KeyboardEvent, rowIndex: number): void {
+  // Selectboxのキーダウンイベント
+  onStatusSelectKeydown(
+    event: KeyboardEvent,
+    rowIndex: number,
+    colIndex: number
+  ): void {
     if (this.isConfirmationMode) {
       event.preventDefault(); // 確認モード中はキー入力を無効にする
     }

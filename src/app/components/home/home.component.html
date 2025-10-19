@@ -32,14 +32,6 @@
         <th>I{{ k * 2 + 2 }}</th>
         <th>S{{ k + 1 }}</th>
       </ng-container>
-      <!--
-        【Status列について】
-        この列はテーブルの最終列として固定されています。
-        この列を削除する場合は、`home.component.ts` の `STATUS_COLUMN_INDEX` 定数と、
-        `NUM_COLUMNS` 定数の計算からこの列の分を減らす必要があります。
-        また、関連するロジック (`isChanged`, `onStatusChange`, `finalConfirm` など) も調整が必要になる場合があります。
-      -->
-      <th>Status</th>
     </tr>
   </thead>
   <tbody>
@@ -78,9 +70,8 @@
         1. ここで `[].constructor(6)` の `6` を変更することで、このパターンの繰り返し回数を調整できます。
            例: 3回に減らす場合 `[].constructor(3)` (Input 6列 + Select 3列)
            例: 8回に増やす場合 `[].constructor(8)` (Input 16列 + Select 8列)
-        2. `home.component.ts` の `NUM_COLUMNS` と `STATUS_COLUMN_INDEX` 定数も、この変更に合わせて再計算し、更新する必要があります。
-           `NUM_COLUMNS` = 1 (Index) + `ADDED_COLUMNS_COUNT` + (変更後の繰り返し回数 * 3) + 1 (Status)
-           `STATUS_COLUMN_INDEX` = `NUM_COLUMNS` - 1
+        2. `home.component.ts` の `NUM_COLUMNS` 定数も、この変更に合わせて再計算し、更新する必要があります。
+           `NUM_COLUMNS` = 1 (Index) + `ADDED_COLUMNS_COUNT` + (変更後の繰り返し回数 * 3)
         3. `home.component.scss` の `th:nth-child()` と `td:nth-child()` セレクタも調整が必要です。
            特に、Input列とSelect列のCSSセレクタの範囲を、変更後の列数に合わせて更新してください。
       -->
@@ -168,7 +159,9 @@
               moveSelection('ArrowDown')
             "
             [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
-            (keydown)="onStatusSelectKeydown($event, i)"
+            (keydown)="
+              onStatusSelectKeydown($event, i, ADDED_COLUMNS_COUNT + k * 3 + 3)
+            "
           >
             <option value="">--</option>
             <option value="OK">OK</option>
@@ -176,39 +169,6 @@
           </select>
         </td>
       </ng-container>
-      <!--
-        【Status列について】
-        この列はテーブルの最終列として固定されています。
-        この列を削除する場合は、`home.component.ts` の `STATUS_COLUMN_INDEX` 定数と、
-        `NUM_COLUMNS` 定数の計算からこの列の分を減らす必要があります。
-        また、関連するロジック (`isChanged`, `onStatusChange`, `finalConfirm` など) も調整が必要になる場合があります。
-      -->
-      <td
-        #dataCell
-        tabindex="0"
-        [class.changed]="isChanged(i, STATUS_COLUMN_INDEX)"
-        [class.selected-for-confirmation]="selectedForConfirmation[i]"
-        [class.confirmed-and-cleared]="isConfirmedAndCleared[i]"
-        (click)="onCellClick(i, STATUS_COLUMN_INDEX)"
-        [class.selected-cell]="
-          selectedCell.row === i && selectedCell.col === STATUS_COLUMN_INDEX
-        "
-      >
-        <select
-          #statusSelect
-          name="status-{{ i }}-final"
-          [(ngModel)]="data[i]['Column ' + STATUS_COLUMN_INDEX]"
-          (ngModelChange)="
-            onStatusChange(i, STATUS_COLUMN_INDEX); moveSelection('ArrowDown')
-          "
-          [disabled]="isConfirmedAndCleared[i] || isConfirmationMode"
-          (keydown)="onStatusSelectKeydown($event, i)"
-        >
-          <option value="">--</option>
-          <option value="OK">OK</option>
-          <option value="NG">NG</option>
-        </select>
-      </td>
     </tr>
   </tbody>
 </table>
