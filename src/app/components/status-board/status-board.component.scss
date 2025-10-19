@@ -73,7 +73,7 @@
 
 .task-box {
   padding: 10px 15px; /* パディングを調整 */
-  border: solid 1px #ccc; /* 下線ではなく枠線に変更 */
+  border: 1px solid rgba(255, 255, 255, 0.4); /* より明るい半透明の白いボーダー */
   color: #333;
   display: flex;
   flex-direction: column; /* タスク内容とアクションを縦に並べる */
@@ -81,11 +81,14 @@
   justify-content: space-between;
   box-sizing: border-box;
   cursor: grab;
-  background: #f9f9f9;
+  background: rgba(173, 216, 230, 0.3); /* 半透明の水色を少し薄く */
+  backdrop-filter: blur(15px); /* ガラス効果を強める */
+  -webkit-backdrop-filter: blur(15px); /* Safari対応 */
   font-size: 14px;
   margin-bottom: 0; /* 横並びなので下マージンは不要 */
-  border-radius: 4px;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  border-radius: 12px; /* 角をさらに丸く */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 5px 10px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5); /* 奥行きと内側の光沢感を強調 */
   min-width: 180px; /* タスクボックスの最小幅 */
   max-width: 250px; /* タスクボックスの最大幅 */
 }
