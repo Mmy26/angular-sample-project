@@ -29,11 +29,26 @@ export class HomeComponent implements OnInit {
   @ViewChildren('dataCell') dataCells!: QueryList<ElementRef>;
   @ViewChildren('statusSelect') statusSelects!: QueryList<ElementRef>; // status select要素への参照
 
-  // 列の数を定義 (Index, 追加10列, Input 2列 + Select 1列 * 6回, Status)
-  private readonly NUM_COLUMNS = 31; // 1 (Index) + 10 (追加列) + 18 (6*3) + 1 (Status) = 30列 + 1 (0-indexed)
-  private readonly ADDED_COLUMNS_COUNT = 10; // 追加する列の数
-  private readonly STATUS_COLUMN_INDEX = 30; // Status列のインデックス (0-indexed)
-  private readonly STATUS_OPTIONS = ['OK', 'NG']; // Statusの選択肢
+  // 【重要】テーブルの列構成を変更する際の定数定義
+  // home.component.html のコメントと合わせて変更してください。
+
+  // テーブル全体の列数 (0-indexedのため、実際の列数より1大きい値)
+  // 例: Index(1) + 追加列(10) + Input/Selectパターン(6*3=18) + Status(1) = 30列。0-indexedなので30。
+  //     つまり、実際の列数は `NUM_COLUMNS` の値 + 1 となります。
+  // 列数を変更する場合は、この値を再計算して更新してください。
+  private readonly NUM_COLUMNS = 31;
+
+  // 追加列の数
+  // home.component.html の `[].constructor(10)` の `10` と同じ値にしてください。
+  private readonly ADDED_COLUMNS_COUNT = 10;
+
+  // 最終Status列のインデックス (0-indexed)
+  // この値は `NUM_COLUMNS` - 1 となります。
+  // 列数を変更する場合は、この値を再計算して更新してください。
+  private readonly STATUS_COLUMN_INDEX = 30;
+
+  // Status列の選択肢
+  private readonly STATUS_OPTIONS = ['OK', 'NG'];
 
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 

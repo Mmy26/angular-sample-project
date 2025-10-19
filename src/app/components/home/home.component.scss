@@ -52,7 +52,14 @@ td:nth-child(1) {
   width: 50px; /* Index列 */
 }
 
-/* 追加10列 */
+/*
+  【追加列の幅設定】
+  home.component.html の `[].constructor(10)` の `10` を変更した場合、
+  ここも変更後の列数に合わせてセレクタを調整する必要があります。
+  例: 5列に減らした場合、`th:nth-child(2)` から `th:nth-child(6)` までに変更。
+  例: 15列に増やす場合、`th:nth-child(2)` から `th:nth-child(16)` までに変更。
+  `nth-child(n)` の `n` は、Index列 (1) の次から数え始めます。
+*/
 th:nth-child(2),
 td:nth-child(2),
 th:nth-child(3),
@@ -76,8 +83,16 @@ td:nth-child(11) {
   width: 80px; /* 追加列 */
 }
 
-/* Input 2列 + Select 1列 のパターンを6回繰り返す */
-/* Input列 (12列目から) */
+/*
+  【Input 2列 + Select 1列 のパターン列の幅設定】
+  home.component.html の `[].constructor(6)` の `6` を変更した場合、
+  ここも変更後の繰り返し回数に合わせてセレクタを調整する必要があります。
+  `nth-child(n)` の `n` は、Index列と追加列の後に続く列から数え始めます。
+  現在の設定では、追加列が10列あるため、Input列は12列目から始まります。
+  例: 繰り返し回数を3回に減らした場合 (Input 6列 + Select 3列)、
+      Input列は `th:nth-child(12)` から `th:nth-child(13)`、`th:nth-child(15)` から `th:nth-child(16)`、
+      `th:nth-child(18)` から `th:nth-child(19)` までとなります。
+*/
 th:nth-child(12),
 td:nth-child(12),
 th:nth-child(13),
@@ -105,7 +120,14 @@ td:nth-child(28) {
   width: 100px; /* Input列 */
 }
 
-/* Select列 (14列目から) */
+/*
+  【Select列の幅設定】
+  home.component.html の `[].constructor(6)` の `6` を変更した場合、
+  ここも変更後の繰り返し回数に合わせてセレクタを調整する必要があります。
+  現在の設定では、Select列は14列目から始まります。
+  例: 繰り返し回数を3回に減らした場合 (Input 6列 + Select 3列)、
+      Select列は `th:nth-child(14)`、`th:nth-child(17)`、`th:nth-child(20)` までとなります。
+*/
 th:nth-child(14),
 td:nth-child(14),
 th:nth-child(17),
@@ -121,7 +143,13 @@ td:nth-child(29) {
   width: 100px; /* Select列 */
 }
 
-/* 最終Status列 (31列目) */
+/*
+  【最終Status列の幅設定】
+  この列はテーブルの最終列として固定されています。
+  `home.component.ts` の `STATUS_COLUMN_INDEX` 定数と `NUM_COLUMNS` 定数の変更に合わせて、
+  `nth-child()` の値を更新する必要があります。
+  現在の設定では、31列目です。
+*/
 th:nth-child(31),
 td:nth-child(31) {
   width: 100px; /* 最終Status列 */

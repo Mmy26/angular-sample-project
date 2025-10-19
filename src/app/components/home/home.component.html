@@ -4,16 +4,41 @@
   <thead>
     <tr>
       <th>Index</th>
-      <!-- 追加10列 -->
+      <!--
+        【列の追加・削除方法】
+        1. ここで `[].constructor(10)` の `10` を変更することで、追加列の数を調整できます。
+           例: 5列に減らす場合 `[].constructor(5)`
+           例: 15列に増やす場合 `[].constructor(15)`
+        2. `home.component.ts` の `ADDED_COLUMNS_COUNT` 定数も同じ値に変更してください。
+        3. `home.component.scss` の `th:nth-child()` と `td:nth-child()` セレクタも調整が必要です。
+           特に、追加列のCSSセレクタの範囲 (`th:nth-child(2)` から `th:nth-child(11)`) を変更後の列数に合わせて更新してください。
+      -->
       <ng-container *ngFor="let col of [].constructor(10); let k = index">
         <th>AddCol{{ k + 1 }}</th>
       </ng-container>
-      <!-- Input 2列 + Select 1列 のパターンを6回繰り返す -->
+      <!--
+        【Input 2列 + Select 1列 のパターン列の追加・削除方法】
+        1. ここで `[].constructor(6)` の `6` を変更することで、このパターンの繰り返し回数を調整できます。
+           例: 3回に減らす場合 `[].constructor(3)` (Input 6列 + Select 3列)
+           例: 8回に増やす場合 `[].constructor(8)` (Input 16列 + Select 8列)
+        2. `home.component.ts` の `NUM_COLUMNS` と `STATUS_COLUMN_INDEX` 定数も、この変更に合わせて再計算し、更新する必要があります。
+           `NUM_COLUMNS` = 1 (Index) + `ADDED_COLUMNS_COUNT` + (変更後の繰り返し回数 * 3) + 1 (Status)
+           `STATUS_COLUMN_INDEX` = `NUM_COLUMNS` - 1
+        3. `home.component.scss` の `th:nth-child()` と `td:nth-child()` セレクタも調整が必要です。
+           特に、Input列とSelect列のCSSセレクタの範囲を、変更後の列数に合わせて更新してください。
+      -->
       <ng-container *ngFor="let col of [].constructor(6); let k = index">
         <th>I{{ k * 2 + 1 }}</th>
         <th>I{{ k * 2 + 2 }}</th>
         <th>S{{ k + 1 }}</th>
       </ng-container>
+      <!--
+        【Status列について】
+        この列はテーブルの最終列として固定されています。
+        この列を削除する場合は、`home.component.ts` の `STATUS_COLUMN_INDEX` 定数と、
+        `NUM_COLUMNS` 定数の計算からこの列の分を減らす必要があります。
+        また、関連するロジック (`isChanged`, `onStatusChange`, `finalConfirm` など) も調整が必要になる場合があります。
+      -->
       <th>Status</th>
     </tr>
   </thead>
@@ -29,7 +54,15 @@
       >
         {{ i + 1 }}
       </td>
-      <!-- 追加10列 -->
+      <!--
+        【列の追加・削除方法】
+        1. ここで `[].constructor(10)` の `10` を変更することで、追加列の数を調整できます。
+           例: 5列に減らす場合 `[].constructor(5)`
+           例: 15列に増やす場合 `[].constructor(15)`
+        2. `home.component.ts` の `ADDED_COLUMNS_COUNT` 定数も同じ値に変更してください。
+        3. `home.component.scss` の `th:nth-child()` と `td:nth-child()` セレクタも調整が必要です。
+           特に、追加列のCSSセレクタの範囲 (`th:nth-child(2)` から `th:nth-child(11)`) を変更後の列数に合わせて更新してください。
+      -->
       <ng-container *ngFor="let col of [].constructor(10); let k = index">
         <td
           #dataCell
@@ -40,7 +73,17 @@
           {{ data[i]["Column " + (k + 1)] }}
         </td>
       </ng-container>
-      <!-- Input 2列 + Select 1列 のパターンを6回繰り返す -->
+      <!--
+        【Input 2列 + Select 1列 のパターン列の追加・削除方法】
+        1. ここで `[].constructor(6)` の `6` を変更することで、このパターンの繰り返し回数を調整できます。
+           例: 3回に減らす場合 `[].constructor(3)` (Input 6列 + Select 3列)
+           例: 8回に増やす場合 `[].constructor(8)` (Input 16列 + Select 8列)
+        2. `home.component.ts` の `NUM_COLUMNS` と `STATUS_COLUMN_INDEX` 定数も、この変更に合わせて再計算し、更新する必要があります。
+           `NUM_COLUMNS` = 1 (Index) + `ADDED_COLUMNS_COUNT` + (変更後の繰り返し回数 * 3) + 1 (Status)
+           `STATUS_COLUMN_INDEX` = `NUM_COLUMNS` - 1
+        3. `home.component.scss` の `th:nth-child()` と `td:nth-child()` セレクタも調整が必要です。
+           特に、Input列とSelect列のCSSセレクタの範囲を、変更後の列数に合わせて更新してください。
+      -->
       <ng-container *ngFor="let col of [].constructor(6); let k = index">
         <!-- Input 1 -->
         <td
@@ -133,7 +176,13 @@
           </select>
         </td>
       </ng-container>
-      <!-- Final Status Column -->
+      <!--
+        【Status列について】
+        この列はテーブルの最終列として固定されています。
+        この列を削除する場合は、`home.component.ts` の `STATUS_COLUMN_INDEX` 定数と、
+        `NUM_COLUMNS` 定数の計算からこの列の分を減らす必要があります。
+        また、関連するロジック (`isChanged`, `onStatusChange`, `finalConfirm` など) も調整が必要になる場合があります。
+      -->
       <td
         #dataCell
         tabindex="0"
