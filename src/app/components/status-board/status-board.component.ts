@@ -4,6 +4,7 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 // タスクアイテムのインターフェース
 interface Task {
@@ -30,22 +31,34 @@ export class StatusBoardComponent implements OnInit {
   statusColumns: StatusColumn[] = []; // 縦に並ぶステータス列
   tasks: Task[] = []; // 全てのタスクアイテム
 
-  newTaskContent: string = ''; // 新しいタスクの内容入力用
-  newTaskPriority: number = 1; // 新しいタスクの優先度入力用
-  newColumnTitle: string = ''; // 新しいステータスのタイトル入力用
+  newTaskForm!: FormGroup; // 新しいタスクのフォームグループ
+  newColumnForm!: FormGroup; // 新しいステータス列のフォームグループ
+  editingTaskForm!: FormGroup; // 編集中のタスクのフォームグループ
 
   editingTask: {
     taskId: string;
     statusId: string;
     originalContent: string;
     originalPriority: number;
-    currentContent: string; // 編集中の内容
-    currentPriority: number; // 編集中の優先度
   } | null = null;
 
   constructor() {}
 
   ngOnInit(): void {
+    this.newTaskForm = new FormGroup({
+      content: new FormControl('', Validators.required),
+      priority: new FormControl(1, [Validators.required, Validators.min(1)]),
+    });
+
+    this.newColumnForm = new FormGroup({
+      title: new FormControl('', Validators.required),
+    });
+
+    this.editingTaskForm = new FormGroup({
+      content: new FormControl('', Validators.required),
+      priority: new FormControl(1, [Validators.required, Validators.min(1)]),
+    });
+
     this.statusColumns = [
       { id: 'todoList', title: 'To do' },
       { id: 'doneList', title: 'Done' },
@@ -128,14 +141,16 @@ export class StatusBoardComponent implements OnInit {
 
   // 新しいステータス列を追加
   addColumn(): void {
-    if (this.newColumnTitle.trim()) {
+    if (this.newColumnForm.valid) {
+      const newColumnTitle = this.newColumnForm.get('title')?.value.trim();
       const newColumnId =
-        this.newColumnTitle.trim().toLowerCase().replace(/\s/g, '') + 'List';
+        newColumnTitle.toLowerCase().replace(/\s/g, '') + 'List';
       this.statusColumns.push({
         id: newColumnId,
-        title: this.newColumnTitle.trim(),
+        title: newColumnTitle,
       });
-      this.newColumnTitle = ''; // 入力フィールドをクリア
+      this.newColumnForm.reset(); // フォームをクリア
+      this.newColumnForm.get('title')?.setValue(''); // タイトルを空に設定
     }
   }
 
@@ -223,7 +238,10 @@ export class StatusBoardComponent implements OnInit {
 
   // 新しいタスクを追加
   addTask(statusColumn: StatusColumn): void {
-    if (this.newTaskContent.trim()) {
+    if (this.newTaskForm.valid) {
+      const newTaskContent = this.newTaskForm.get('content')?.value.trim();
+      const newTaskPriority = this.newTaskForm.get('priority')?.value;
+
       const newTaskId = `task-${Date.now()}-${Math.random()
         .toString(36)
         .substr(2, 9)}`; // ユニークなIDを生成
@@ -235,13 +253,13 @@ export class StatusBoardComponent implements OnInit {
 
       this.tasks.push({
         id: newTaskId,
-        content: this.newTaskContent.trim(),
+        content: newTaskContent,
         statusId: statusColumn.id,
-        priority: newPriority,
+        priority: newTaskPriority,
       });
       this.sortTasksInColumn(statusColumn.id); // 追加したカラムのタスクをソート
-      this.newTaskContent = '';
-      this.newTaskPriority = 1; // デフォルト値に戻す
+      this.newTaskForm.reset(); // フォームをクリア
+      this.newTaskForm.get('priority')?.setValue(1); // 優先度をデフォルト値に戻す
     }
   }
 
@@ -257,20 +275,28 @@ export class StatusBoardComponent implements OnInit {
       statusId,
       originalContent: currentContent,
       originalPriority: currentPriority,
-      currentContent: currentContent, // 初期値として現在の内容を設定
-      currentPriority: currentPriority, // 初期値として現在の優先度を設定
     };
+    this.editingTaskForm.setValue({
+      content: currentContent,
+      priority: currentPriority,
+    });
   }
 
   // タスクを保存
-  saveTask(taskId: string, newContent: string, newPriority: number): void {
-    const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
-    if (taskIndex !== -1 && newContent.trim()) {
-      this.tasks[taskIndex].content = newContent.trim();
-      this.tasks[taskIndex].priority = newPriority;
-      this.sortTasksInColumn(this.tasks[taskIndex].statusId); // 変更したタスクのカラムをソート
+  saveTask(taskId: string): void {
+    if (this.editingTaskForm.valid) {
+      const newContent = this.editingTaskForm.get('content')?.value.trim();
+      const newPriority = this.editingTaskForm.get('priority')?.value;
+
+      const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
+      if (taskIndex !== -1 && newContent) {
+        this.tasks[taskIndex].content = newContent;
+        this.tasks[taskIndex].priority = newPriority;
+        this.sortTasksInColumn(this.tasks[taskIndex].statusId); // 変更したタスクのカラムをソート
+      }
+      this.editingTask = null;
+      this.editingTaskForm.reset();
     }
-    this.editingTask = null;
   }
 
   // タスクの編集をキャンセル
@@ -285,6 +311,7 @@ export class StatusBoardComponent implements OnInit {
         this.sortTasksInColumn(this.editingTask.statusId); // 編集前の値に戻した後、ソートし直す
       }
       this.editingTask = null;
+      this.editingTaskForm.reset();
     }
   }
 
