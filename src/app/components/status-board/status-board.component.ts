@@ -139,6 +139,30 @@ export class StatusBoardComponent implements OnInit {
       .sort((a, b) => a.priority - b.priority);
   }
 
+  // 最大の優先度を取得（テーブルの列数を決定）
+  getMaxPriority(): number {
+    if (this.tasks.length === 0) return 0;
+    return Math.max(...this.tasks.map((task) => task.priority));
+  }
+
+  // 優先度の配列を取得（テーブルのヘッダー用）
+  getPriorityColumns(): number[] {
+    const maxPriority = this.getMaxPriority();
+    return Array.from({ length: maxPriority }, (_, i) => i + 1);
+  }
+
+  // 指定されたステータスと優先度に一致するタスクを取得
+  getTaskByStatusAndPriority(statusId: string, priority: number): Task | undefined {
+    return this.tasks.find(
+      (task) => task.statusId === statusId && task.priority === priority
+    );
+  }
+
+  // ドロップリストIDを生成
+  getDropListId(statusId: string, priority: number): string {
+    return `${statusId}-${priority}`;
+  }
+
   // 新しいステータス列を追加
   addColumn(): void {
     if (this.newColumnForm.valid) {
@@ -154,18 +178,30 @@ export class StatusBoardComponent implements OnInit {
     }
   }
 
-  // ドラッグ＆ドロップで接続可能なリストのIDを全て返す
+  // ドラッグ＆ドロップで接続可能なリストのIDを全て返す（テーブル用）
   getConnectedListIds(): string[] {
-    return this.statusColumns.map((column) => column.id);
+    const ids: string[] = [];
+    const maxPriority = this.getMaxPriority();
+    
+    this.statusColumns.forEach((column) => {
+      for (let priority = 1; priority <= maxPriority; priority++) {
+        ids.push(this.getDropListId(column.id, priority));
+      }
+    });
+    
+    return ids;
   }
 
-  // タスクのドラッグ＆ドロップ処理
-  drop(event: CdkDragDrop<Task[]>): void {
+  // タスクのドラッグ＆ドロップ処理（テーブル用）
+  drop(event: CdkDragDrop<{ statusId: string; priority: number }>): void {
+    const previousData = event.previousContainer.data;
+    const currentData = event.container.data;
+
     const previousStatusColumn = this.statusColumns.find(
-      (col) => col.id === event.previousContainer.id
+      (col) => col.id === previousData.statusId
     );
     const currentStatusColumn = this.statusColumns.find(
-      (col) => col.id === event.container.id
+      (col) => col.id === currentData.statusId
     );
 
     if (!previousStatusColumn || !currentStatusColumn) {
@@ -187,53 +223,43 @@ export class StatusBoardComponent implements OnInit {
       alert('Reject列がOFFのため、タスクを移動できません。');
       return;
     }
-    if (
-      currentStatusColumn.isRejectColumn &&
-      currentStatusColumn.id === event.previousContainer.id &&
-      !currentStatusColumn.isRejectEnabled
-    ) {
-      alert('Reject列がOFFのため、タスクの並べ替えはできません。');
+
+    // 移動元のタスクを取得
+    const movedTask = this.getTaskByStatusAndPriority(
+      previousData.statusId,
+      previousData.priority
+    );
+
+    if (!movedTask) {
       return;
     }
 
-    if (event.previousContainer === event.container) {
-      // 同じステータス内での並べ替え
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-      // 優先度を再割り当て
-      event.container.data.forEach((task, index) => {
-        const originalTaskIndex = this.tasks.findIndex((t) => t.id === task.id);
-        if (originalTaskIndex !== -1) {
-          this.tasks[originalTaskIndex].priority = index + 1;
-        }
-      });
-    } else {
-      // 異なるステータスへの移動
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-
-      // 移動したタスクのstatusIdを更新
-      const movedTask = event.container.data[event.currentIndex];
-      const taskIndexInAllTasks = this.tasks.findIndex(
-        (task) => task.id === movedTask.id
-      );
-      if (taskIndexInAllTasks !== -1) {
-        this.tasks[taskIndexInAllTasks].statusId = currentStatusColumn.id;
-      }
-
-      // 移動元と移動先の両方のステータスで優先度を再割り当て
-      this.sortTasksInColumn(previousStatusColumn.id);
-      this.sortTasksInColumn(currentStatusColumn.id);
+    // 同じステータス、同じ優先度の場合は何もしない
+    if (
+      previousData.statusId === currentData.statusId &&
+      previousData.priority === currentData.priority
+    ) {
+      return;
     }
-    // 全てのカラムで優先度を再ソート (念のため)
-    this.sortTasksInAllColumns();
+
+    // 移動先にすでにタスクがある場合は入れ替え
+    const targetTask = this.getTaskByStatusAndPriority(
+      currentData.statusId,
+      currentData.priority
+    );
+
+    const movedTaskIndex = this.tasks.findIndex((t) => t.id === movedTask.id);
+
+    if (targetTask) {
+      // 入れ替え
+      const targetTaskIndex = this.tasks.findIndex((t) => t.id === targetTask.id);
+      this.tasks[targetTaskIndex].statusId = previousData.statusId;
+      this.tasks[targetTaskIndex].priority = previousData.priority;
+    }
+
+    // 移動したタスクを更新
+    this.tasks[movedTaskIndex].statusId = currentData.statusId;
+    this.tasks[movedTaskIndex].priority = currentData.priority;
   }
 
   // 新しいタスクを追加

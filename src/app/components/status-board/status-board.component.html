@@ -1,90 +1,113 @@
 <div class="status-board">
-  <!-- 各ステータス行を縦に並べる -->
-  <div class="status-row" *ngFor="let statusColumn of statusColumns">
-    <div class="status-header">
-      <div class="reject-header" *ngIf="statusColumn.isRejectColumn">
-        <h2>{{ statusColumn.title }}</h2>
-        <label class="switch">
-          <input type="checkbox" [(ngModel)]="statusColumn.isRejectEnabled" />
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <h2 *ngIf="!statusColumn.isRejectColumn">{{ statusColumn.title }}</h2>
-      <div
-        class="add-task"
-        *ngIf="!statusColumn.isRejectColumn"
-        [formGroup]="newTaskForm"
-      >
-        <input
-          type="text"
-          formControlName="content"
-          placeholder="新しいタスクを追加"
-        />
-        <input
-          type="number"
-          formControlName="priority"
-          placeholder="優先度"
-          min="1"
-        />
-        <button
-          (click)="addTask(statusColumn)"
-          [disabled]="newTaskForm.invalid"
-        >
-          追加
-        </button>
-      </div>
-    </div>
+  <!-- テーブル形式でタスクを表示 -->
+  <table class="task-table">
+    <thead>
+      <tr>
+        <th class="status-header-cell">ステータス</th>
+        <th *ngFor="let priority of getPriorityColumns()">
+          タスク{{ priority }}
+        </th>
+        <th class="actions-header-cell">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let statusColumn of statusColumns" class="status-row">
+        <!-- ステータス列のヘッダー -->
+        <td class="status-cell">
+          <div class="reject-header" *ngIf="statusColumn.isRejectColumn">
+            <h3>{{ statusColumn.title }}</h3>
+            <label class="switch">
+              <input
+                type="checkbox"
+                [(ngModel)]="statusColumn.isRejectEnabled"
+              />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <h3 *ngIf="!statusColumn.isRejectColumn">{{ statusColumn.title }}</h3>
+        </td>
 
-    <!-- 各ステータス内のタスクアイテムを横に並べる -->
-    <div
-      cdkDropList
-      [id]="statusColumn.id"
-      [cdkDropListData]="getTasksByStatus(statusColumn.id)"
-      [cdkDropListConnectedTo]="getConnectedListIds()"
-      class="task-list-horizontal"
-      (cdkDropListDropped)="drop($event)"
-      cdkDropListOrientation="horizontal"
-    >
-      <div
-        class="task-box"
-        *ngFor="let task of getTasksByStatus(statusColumn.id); let i = index"
-        cdkDrag
-        [cdkDragData]="task"
-      >
-        <ng-container *ngIf="editingTask?.taskId === task.id; else showTask">
-          <div [formGroup]="editingTaskForm">
+        <!-- 各優先度のタスクセル -->
+        <td
+          *ngFor="let priority of getPriorityColumns()"
+          class="task-cell"
+          cdkDropList
+          [id]="getDropListId(statusColumn.id, priority)"
+          [cdkDropListData]="{ statusId: statusColumn.id, priority: priority }"
+          [cdkDropListConnectedTo]="getConnectedListIds()"
+          (cdkDropListDropped)="drop($event)"
+        >
+          <div
+            *ngIf="getTaskByStatusAndPriority(statusColumn.id, priority) as task"
+            class="task-box"
+            cdkDrag
+            [cdkDragData]="task"
+          >
+            <ng-container *ngIf="editingTask?.taskId === task.id; else showTask">
+              <div [formGroup]="editingTaskForm" class="edit-form">
+                <input
+                  type="text"
+                  formControlName="content"
+                  (blur)="saveTask(editingTask.taskId)"
+                  (keyup.enter)="saveTask(editingTask.taskId)"
+                />
+                <input
+                  type="number"
+                  formControlName="priority"
+                  (blur)="saveTask(editingTask.taskId)"
+                  (keyup.enter)="saveTask(editingTask.taskId)"
+                  min="1"
+                />
+                <button (click)="cancelEdit()" class="cancel-btn">キャンセル</button>
+              </div>
+            </ng-container>
+            <ng-template #showTask>
+              <div class="task-content">{{ task.content }}</div>
+              <div class="task-actions">
+                <button
+                  (click)="editTask(task.id, task.statusId, task.content, task.priority)"
+                  class="edit-btn"
+                >
+                  編集
+                </button>
+                <button (click)="deleteTask(task.id)" class="delete-btn">
+                  削除
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </td>
+
+        <!-- タスク追加セル -->
+        <td class="add-task-cell">
+          <div
+            class="add-task"
+            *ngIf="!statusColumn.isRejectColumn"
+            [formGroup]="newTaskForm"
+          >
             <input
               type="text"
               formControlName="content"
-              (blur)="saveTask(editingTask.taskId)"
-              (keyup.enter)="saveTask(editingTask.taskId)"
+              placeholder="タスクを追加"
             />
             <input
               type="number"
               formControlName="priority"
-              (blur)="saveTask(editingTask.taskId)"
-              (keyup.enter)="saveTask(editingTask.taskId)"
+              placeholder="優先度"
               min="1"
             />
-            <button (click)="cancelEdit()">キャンセル</button>
-          </div>
-        </ng-container>
-        <ng-template #showTask>
-          {{ task.content }} (P: {{ task.priority }})
-          <div class="actions">
             <button
-              (click)="
-                editTask(task.id, task.statusId, task.content, task.priority)
-              "
+              (click)="addTask(statusColumn)"
+              [disabled]="newTaskForm.invalid"
+              class="add-btn"
             >
-              編集
+              追加
             </button>
-            <button (click)="deleteTask(task.id)">削除</button>
           </div>
-        </ng-template>
-      </div>
-    </div>
-  </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <!-- 新しいステータス列を追加するセクション -->
   <div class="add-column-section" [formGroup]="newColumnForm">

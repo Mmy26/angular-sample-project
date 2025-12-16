@@ -1,116 +1,210 @@
 .status-board {
-  display: flex;
-  flex-direction: column; /* ステータス行を縦に並べる */
-  align-items: flex-start;
   padding: 15px;
+  overflow-x: auto;
+}
+
+/* テーブルのスタイル */
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-table thead {
+  background-color: #f8f9fa;
+}
+
+.task-table th {
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.task-table td {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+.status-header-cell {
+  background-color: #e9ecef;
+  min-width: 150px;
+}
+
+.actions-header-cell {
+  background-color: #e9ecef;
+  min-width: 200px;
 }
 
 .status-row {
-  width: 100%; /* 親要素の幅いっぱいに広げる */
-  margin-bottom: 15px; /* 各ステータス行間のスペース */
-  border: 1px solid #ddd;
-  padding: 10px;
-  box-sizing: border-box;
+  transition: background-color 0.2s;
 }
 
-.status-header {
-  display: flex;
-  flex-direction: row; /* ヘッダー内の要素を横に並べる */
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  min-height: 40px; /* ヘッダーの最小高さを確保 */
+.status-row:hover {
+  background-color: #f8f9fa;
 }
 
-.status-header h2 {
+.status-cell {
+  background-color: #f8f9fa;
+  font-weight: 500;
+}
+
+.status-cell h3 {
   margin: 0;
-  flex-grow: 1; /* タイトルが利用可能なスペースを占める */
+  font-size: 16px;
+  color: #495057;
+}
+
+/* タスクセル */
+.task-cell {
+  min-width: 200px;
+  max-width: 250px;
+  min-height: 100px;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+.task-cell.cdk-drop-list-dragging {
+  background-color: #e3f2fd;
+}
+
+.add-task-cell {
+  min-width: 250px;
+  background-color: #fff;
 }
 
 .add-task {
   display: flex;
-  align-items: center;
-  gap: 10px; /* 要素間のスペース */
+  flex-direction: column;
+  gap: 8px;
+  padding: 5px;
 }
 
 .add-task input {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #ced4da;
   border-radius: 4px;
-  flex-grow: 1;
+  font-size: 13px;
 }
 
 .add-task input[type="number"] {
-  width: 60px; /* 優先度入力フィールドの幅を調整 */
   text-align: center;
 }
 
-.add-task button {
+.add-btn {
   padding: 8px 12px;
-  background-color: #007bff;
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.2s;
 }
 
-.add-task button:hover {
+.add-btn:hover {
+  background-color: #218838;
+}
+
+.add-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* タスクボックス */
+.task-box {
+  padding: 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(173, 216, 230, 0.4), rgba(135, 206, 250, 0.3));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.task-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.task-box:active {
+  cursor: grabbing;
+}
+
+.task-content {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+}
+
+.task-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.edit-btn,
+.delete-btn,
+.cancel-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.edit-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.edit-btn:hover {
   background-color: #0056b3;
 }
 
-.task-list-horizontal {
-  min-height: 60px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  display: flex; /* タスクアイテムを横に並べる */
-  flex-direction: row;
-  flex-wrap: wrap; /* タスクアイテムが多すぎる場合に折り返す */
-  gap: 10px; /* タスクアイテム間のスペース */
-  padding: 10px;
-  border: 2px solid green;
-  overflow-x: auto; /* 横スクロールを可能にする */
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
 }
 
-.task-box {
-  padding: 10px 15px; /* パディングを調整 */
-  border: 1px solid rgba(255, 255, 255, 0.4); /* より明るい半透明の白いボーダー */
-  color: #333;
-  display: flex;
-  flex-direction: column; /* タスク内容とアクションを縦に並べる */
-  align-items: flex-start;
-  justify-content: space-between;
-  box-sizing: border-box;
-  cursor: grab;
-  background: rgba(173, 216, 230, 0.3); /* 半透明の水色を少し薄く */
-  backdrop-filter: blur(15px); /* ガラス効果を強める */
-  -webkit-backdrop-filter: blur(15px); /* Safari対応 */
-  font-size: 14px;
-  margin-bottom: 0; /* 横並びなので下マージンは不要 */
-  border-radius: 12px; /* 角をさらに丸く */
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 5px 10px rgba(0, 0, 0, 0.15),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.5); /* 奥行きと内側の光沢感を強調 */
-  min-width: 180px; /* タスクボックスの最小幅 */
-  max-width: 250px; /* タスクボックスの最大幅 */
+.delete-btn:hover {
+  background-color: #c82333;
 }
 
-.task-box .actions {
-  margin-top: 10px; /* タスク内容とボタンの間にスペース */
-  display: flex;
-  gap: 5px;
-}
-
-.task-box .actions button {
-  padding: 5px 10px;
+.cancel-btn {
   background-color: #6c757d;
   color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
 }
 
-.task-box .actions button:hover {
+.cancel-btn:hover {
   background-color: #5a6268;
+}
+
+/* 編集フォーム */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-form input {
+  padding: 6px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.edit-form input[type="number"] {
+  text-align: center;
 }
 
 .cdk-drag-preview {
@@ -137,8 +231,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-  width: 100%; /* Rejectヘッダーが幅いっぱいに広がるように */
+  width: 100%;
+}
+
+.reject-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #495057;
 }
 
 /* The switch - the box around the slider */
